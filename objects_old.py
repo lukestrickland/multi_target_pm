@@ -3,10 +3,6 @@ import numpy as np
 import pandas as pd
 import csv
 
-#cheeky function to insert row into pandas data frame
-def insert_row(idx, df, df_insert):
-    return df.iloc[:idx, ].append(df_insert).append(df.iloc[idx:, ]).reset_index(drop = True)
-
 class Experiment():
     def __init__(self, canvas, design):
         self.canvas = canvas
@@ -110,19 +106,12 @@ class Canvas():
 class Design():
     def __init__(self, stim_file, subject_nr, session_nr, blocks, days):
         # 1338 stimuli - 1:14 PM ratio gives 88 PM trials
-        self.stim = pd.read_csv(stim_file)[0:1346]
+        self.stim = pd.read_csv(stim_file)[0:1338]
         self.cb = subject_nr % 4
         self.id = str(subject_nr) + "_" + str(session_nr)
-        self.words = pd.DataFrame()
-        self.nonwords = pd.DataFrame()
+        self.data = pd.DataFrame()
         self.days = days
         self.blocks = blocks
-        self.data = {}
-        self.design = np.array([["single", "multi"], ["multi", "single"]])
-        for i in range(1, self.days+1):
-            for j in range(1, self.blocks+1):
-        ###Define ranges to insert PM items into 
-                self.data["day_" + str(i) + "_block_" + str(j)] = 0
 
 
     def initial_shuffle(self):
@@ -135,88 +124,82 @@ class Design():
         stim_bothshuffled.reset_index(inplace=True, drop=True)
         stim_bothshuffled['Nonwords'] = stim_nwshuffled['Nonwords']
         self.shuffledstim = stim_bothshuffled
-
-
+   
     def set_ldt(self):
         self.initial_shuffle()
         self.single_cond_words= self.shuffledstim.loc[0:2, "Words"]
         self.multi_cond_words= self.shuffledstim.loc[2:18, "Words"]
-        ongoing_task_items = self.shuffledstim.loc[18:1346]  
+        ongoing_task_items = self.shuffledstim.loc[18:1338]  
         ongoing_task_items= ongoing_task_items.reset_index()
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
 
                 block_num = (i-1)* self.blocks + j 
 
-                words = ongoing_task_items.loc[block_num*290 - 
-                290:block_num*290 -1, "Words"].values
+                words = ongoing_task_items.loc[block_num*288 - 
+                288:block_num*288 -1, "Words"].values
 
-                nonwords = ongoing_task_items.loc[block_num*332 - 
-                332:block_num*332 -1, "Nonwords"].values
+                nonwords = ongoing_task_items.loc[block_num*330 - 
+                330:block_num*330 -1, "Nonwords"].values
 
-                self.words["day_" + str(i) + "_block_" + str(j)] = words
-                self.nonwords["day_" + str(i) + "_block_" + str(j)] = nonwords
+                self.data["day_" + str(i) + "_block_" + str(j)] = np.concatenate([words, nonwords])
 
     def set_pm_positions(self):
         tmp = pd.DataFrame()
-        for i in range(1, self.days+1):
-            for j in range(1, self.blocks+1):
-        ###Define ranges to insert PM items into       
-                starts = np.concatenate(
-                    [np.linspace(start=3, stop=318, num=22),
-                    np.linspace(start=336, stop=651, num=22)])
 
-                stops = np.concatenate(
-                    [np.linspace(start=17, stop=332, num=22),
-                    np.linspace(start=350, stop=665, num=22)])
-        #################
+ ###Define ranges to insert PM items into       
+        starts = np.concatenate(
+            [np.linspace(start=16, stop=316, num=21),
+            np.linspace(start=346, stop=646, num=21)])
 
-                pm_positions=[]
-                for k in range(0, len(starts)):
-                    start = starts[k]
-                    stop = stops[k]
-                    
-                    if(k==0):
-                        last=0
-                    else:
-                        last = pm_positions[k-1]
+        stops = np.concatenate(
+            [np.linspace(start=30, stop=330, num=21),
+            np.linspace(start=360, stop=660, num=21)])
+#################
 
-                    if (last>start-2):
-                        start = last + 2
-                    position=np.random.random_integers(start,stop)
-                    pm_positions.append(position)
+        pm_positions=[]
+        thisblock_stim = self.data.loc[:,"day_1_block_1"].values
+        thisblock_pm = self.single_cond_words.values[0]
 
-                tmp["day_" + str(i) + "_block_" + str(j)] = pm_positions
+        for i in range(0, len(starts)):
+            start = starts[i]
+            stop = stops[i]
+            
+            if(i==0):
+                last=0
+            else:
+                last = pm_positions[i-1]
 
-        self.pm_positions = tmp
+            if (last>start-2):
+                start = last + 2
+            position=np.random.random_integers(start,stop)
+            pm_positions.append(position)
+            thisblock_stim = np.insert(thisblock_stim, position, thisblock_pm)
 
-    def create_blocks(self):    
-        for i in range(1, self.days+1):
-            for j in range(1, self.blocks+1):
-                word_df= pd.DataFrame(self.words["day_" + str(i) + "_block_" + str(j)])
-                word_df['S']="W"
-                nonword_df= pd.DataFrame(self.nonwords["day_" + str(i) + "_block_" + str(j)])
-                nonword_df['S']="N"
-                tmp=word_df.append(nonword_df)
-                tmp.columns = ["stim", "S"]
-                self.data["day_" + str(i) + "_block_" + str(j)] = tmp.sample(frac=1).reset_index(drop=True)
+        tmp["day_1_block_1"] = thisblock_stim
+        self.newdata = tmp
+        self.pm_positions = pm_positions
 
-    def insert_pm(self):
-        newstim = pd.DataFrame()
-        for i in range(1, self.days+1):
-            for j in range(1, self.blocks+1):
-        ###Define ranges to insert PM items into 
-                pm_target ={"stim":[ "single"], "S":[ "P"]}
-                if self.design[i-1,j-1]=='multi':
-                    pm_target['stim']='multi'
-                pm_target = pd.DataFrame(pm_target)[["stim", "S"]]
-                pm_positions = self.pm_positions.loc[:,"day_" + str(i) + "_block_" + str(j)].values
-                thisblock_stim = self.data["day_" + str(i) + "_block_" + str(j)]
-                thisblock_stim.columns=["stim", "S"]
-                for position in pm_positions:
-                    thisblock_stim = insert_row(position, thisblock_stim, pm_target)
-                self.data["day_" + str(i) + "_block_" + str(j)] = thisblock_stim
-      
+ #       self.test =  self.data.loc[:,"day_1_block_1"].
+#        tmp["day_1_block_1"] = np.concatenate([thisblock_stim, thisblock_pm])
+        
     def save(self):
         self.shuffledstim.to_csv(self.id + ".csv")
 
+def generate_pm_positions(starts, stops, pm_positions, thisblock_stim):
+    for i in range(0, len(starts)):
+        start = starts[i]
+        stop = stops[i]
+        
+        if(i==0):
+            last=0
+        else:
+            last = pm_positions[i-1]
+
+        if (last>start-2):
+            start = last + 2
+        position=np.random.random_integers(start,stop)
+        thisblock_stim = np.insert(thisblock_stim, position, thisblock_pm)
+
+
+    return thisblock_stim
