@@ -14,7 +14,12 @@ import numpy as np
 
 
 design=Design("stimuli.csv", 1, 1, 2,2)
-design.set_ldt()
+
+design.read_data()
+print(design.data)
+print("before")
+
+design.set_stim()
 print(design.data)
 design.set_pm_positions()
 #print(design.newdata)
@@ -26,7 +31,7 @@ print(design.data)
 
 design.insert_pm()
 print(design.data)
-
+design.setup_data()
 #print(stim["Words"])
 #print(stim.values)
 

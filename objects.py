@@ -110,11 +110,14 @@ class Canvas():
 class Design():
     def __init__(self, stim_file, subject_nr, session_nr, blocks, days):
         # 1338 stimuli - 1:14 PM ratio gives 88 PM trials
-        self.stim = pd.read_csv(stim_file)[0:1346]
+        self.subject_nr = subject_nr
+        self.session_nr = session_nr
+        self.stim = pd.read_csv(stim_file)[0:1352]
         self.cb = subject_nr % 4
         self.id = str(subject_nr) + "_" + str(session_nr)
         self.words = pd.DataFrame()
         self.nonwords = pd.DataFrame()
+        self.pmtargets = pd.DataFrame()
         self.days = days
         self.blocks = blocks
         self.data = {}
@@ -137,10 +140,12 @@ class Design():
         self.shuffledstim = stim_bothshuffled
 
 
-    def set_ldt(self):
+    def set_stim(self):
         self.initial_shuffle()
-        self.single_cond_words= self.shuffledstim.loc[0:2, "Words"]
-        self.multi_cond_words= self.shuffledstim.loc[2:18, "Words"]
+        self.single_cond_words= self.shuffledstim.loc[0:1, "Words"].values
+        self.multi_cond_words= self.shuffledstim.loc[2:17, "Words"].values
+        #setup pandas df of single target PM words for days 1 and day 2 and multi target 
+
         ongoing_task_items = self.shuffledstim.loc[18:1346]  
         ongoing_task_items= ongoing_task_items.reset_index()
         for i in range(1, self.days+1):
@@ -154,6 +159,14 @@ class Design():
                 nonwords = ongoing_task_items.loc[block_num*332 - 
                 332:block_num*332 -1, "Nonwords"].values
 
+                if self.design[i-1,j-1]=="single":
+                    pmtargets = [self.single_cond_words[i-1]] * 44
+                else:
+                    pmtargets = np.ndarray.tolist(self.multi_cond_words[(i-1)*8:(i*8)]) * 5 + ['a', 'b', 'c', 'd']
+                np.random.shuffle(pmtargets)
+                pmtargets = np.array(pmtargets)
+
+                self.pmtargets["day_" + str(i) + "_block_" + str(j)] = pmtargets
                 self.words["day_" + str(i) + "_block_" + str(j)] = words
                 self.nonwords["day_" + str(i) + "_block_" + str(j)] = nonwords
 
@@ -181,8 +194,8 @@ class Design():
                     else:
                         last = pm_positions[k-1]
 
-                    if (last>start-2):
-                        start = last + 2
+                    if (last>=start-5):
+                        start = last + 6
                     position=np.random.random_integers(start,stop)
                     pm_positions.append(position)
 
@@ -206,17 +219,45 @@ class Design():
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
         ###Define ranges to insert PM items into 
-                pm_target ={"stim":[ "single"], "S":[ "P"]}
+                target_list = self.pmtargets.loc[:,"day_" + str(i) + "_block_" + str(j)].values
+                pm_target ={"stim":self.single_cond_words[0], "S":[ "P"]}
                 if self.design[i-1,j-1]=='multi':
                     pm_target['stim']='multi'
                 pm_target = pd.DataFrame(pm_target)[["stim", "S"]]
                 pm_positions = self.pm_positions.loc[:,"day_" + str(i) + "_block_" + str(j)].values
                 thisblock_stim = self.data["day_" + str(i) + "_block_" + str(j)]
                 thisblock_stim.columns=["stim", "S"]
+                l = 0
                 for position in pm_positions:
+                    pm_target.values[0,0] = target_list[l]
                     thisblock_stim = insert_row(position, thisblock_stim, pm_target)
+                    l= l + 1
+
                 self.data["day_" + str(i) + "_block_" + str(j)] = thisblock_stim
       
-    def save(self):
-        self.shuffledstim.to_csv(self.id + ".csv")
+    def setup_data(self):
+        for i in range(1, self.days+1):
+            day_dats = pd.DataFrame()
+            for j in range(1, self.blocks+1):
+                data = self.data["day_" + str(i) + "_block_" + str(j)]
+                data['R'] = -1
+                data['RT'] = -1
+                data['block'] = j
+                data['day'] = i
+                data['cond'] = self.design[i-1,j-1]
+                if j==1:
+                    day_dats= data
+                else:
+                    day_dats = day_dats.append(data, ignore_index=True)
+            day_dats.to_csv("data/" + "subj_" + str(self.subject_nr) + "_sess_" + str(self.session_nr) + "_" +
+            "day_" + str(i)+ ".csv")
 
+    def read_data(self):
+        for i in range(1, self.days+1):
+            data = pd.read_csv("data/" + "subj_" + str(self.subject_nr) + "_sess_" + str(self.session_nr) + "_" +
+            "day_" + str(i)+ ".csv")
+            for j in range(1, self.blocks+1):
+                blockdat = data[data['block']==j]
+                blockdat.reset_index()
+                self.data["day_" + str(i) + "_block_" + str(j)] = blockdat[["stim", "S"]]
+                
