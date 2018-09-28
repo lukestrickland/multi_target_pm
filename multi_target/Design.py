@@ -153,8 +153,7 @@ class Design():
         self.single_cond_words = pd.read_csv("tmp/p" +str(pid)+ "_single" + ".csv", header=None).iloc[:,1]
         self.multi_cond_words = pd.read_csv("tmp/p" +str(pid)+ "_multi" + ".csv", header=None).iloc[:,1]
         for i in range(1, self.days+1):
-            data = pd.read_csv("data/p" +str(pid)+ "_subj_" + "_sess_"  + "_" +
-            "day_" + str(i)+ ".csv")
+            data = pd.read_csv("data/p" +str(pid)+ "_day_" + str(i)+ ".csv")
             for j in range(1, self.blocks+1):
                 blockdat = data[data['block']==j]
                 blockdat=blockdat.reset_index(drop=True)

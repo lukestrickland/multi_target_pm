@@ -6,7 +6,8 @@ ldt_instructions = "In the next block of trials, you will again perform \n\n"
 
 class Experiment():
     def __init__(self, canvas, design, day, participantid):
-
+        self.participantid=participantid
+        self.perf_data = {}
         self.canvas = canvas
         self.design = design
         self.bal = participantid % 2 
@@ -52,14 +53,23 @@ class Experiment():
         core.wait(0.25)
         resp = event.waitKeys(timeStamped=True)        
 
-    def run_block(self, type):
-        if (type=='multi'):
+    def run_block(self, btype):
+        if (btype=='multi'):
             self.multi_leadup()
         else:
             self.single_leadup()
-        self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
+        choices, RTs = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)].loc[:,'stim'])
+        perf = pd.DataFrame({'RT': RTs, 'R':choices})
+        perf['block'] = self.blocknum
+        perf['day'] = self.day
+        perf['cond'] = btype
+        self.perf_data['day_' + str(self.day) + '_block_' + str(self.blocknum)] =   pd.concat([
+            self.design.data['day_' + str(self.day) + '_block_' + str(
+            self.blocknum)], 
+        perf], axis=1, sort=False)     
         self.blocknum += 1
+        
 
     def run_both_blocks(self):
         for block in range(0,2):
@@ -69,12 +79,22 @@ class Experiment():
         RTs = []
         choices = []
         #len(trials)
-        ntrials=5
+        ntrials=2
         for i in range(0,ntrials):           
-            RT, choice = self.trial(trials[i])
+            choice, RT = self.trial(trials[i])
             RTs.append(RT)
             choices.append(choice)
             core.wait(0.5)
             if event.getKeys(['escape']):
                 self.canvas.close_display()
                 core.quit()
+        return choices, RTs
+
+    def save_data(self):
+        for j in range(1, self.design.blocks+1):
+            data = self.perf_data["day_" + str(self.day) + "_block_" + str(j)].copy()
+            if j==1:
+                day_dats= data
+            else:
+                day_dats = day_dats.append(data, ignore_index=True)
+        day_dats.to_csv("data/p" +str(self.participantid)+ "_day_" + str(self.day)+ ".csv")

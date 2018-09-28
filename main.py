@@ -1,7 +1,7 @@
 from psychopy import visual
-from code.Canvas import Canvas
-from code.Design import Design
-from code.Experiment import Experiment
+from multi_target.Canvas import Canvas
+from multi_target.Design import Design
+from multi_target.Experiment import Experiment
 
 
 #participantid = int(raw_input("Please enter participant id: "))
@@ -23,4 +23,6 @@ experiment.run_both_blocks()
 #print(stim["Words"])
 #print(stim.values)
 
+print(experiment.perf_data)
+experiment.save_data()
 experiment.canvas.close_display
