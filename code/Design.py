@@ -1,4 +1,3 @@
-from psychopy import visual, core, event
 import numpy as np
 import pandas as pd
 import csv

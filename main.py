@@ -1,11 +1,4 @@
-from psychopy import visual, core, event
-import math
-import time
-import pandas as pd
-import numpy as np
-
-
-#from code.objects import Canvas, Experiment, Design
+from psychopy import visual
 from code.Canvas import Canvas
 from code.Design import Design
 from code.Experiment import Experiment
@@ -17,12 +10,9 @@ from code.Experiment import Experiment
 day=2
 participantid=1
 
-print(day + 3)
 
 # Initialise a new Display instance
 disp = visual.Window(color=(-1,-1,-1))
-# Initialise a new EyeTracker instancep
-# Get the handle to the active Window
 canvas = Canvas(disp)
 #
 
@@ -33,4 +23,4 @@ experiment.run_both_blocks()
 #print(stim["Words"])
 #print(stim.values)
 
-canvas.close_display
+experiment.canvas.close_display

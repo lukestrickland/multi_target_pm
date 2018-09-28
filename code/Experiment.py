@@ -1,7 +1,6 @@
-from psychopy import visual, core, event
+from psychopy import core, event
 import numpy as np
 import pandas as pd
-import csv
 
 ldt_instructions = "In the next block of trials, you will again perform \n\n"
 
