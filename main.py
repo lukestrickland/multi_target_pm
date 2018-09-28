@@ -1,9 +1,15 @@
 from psychopy import visual, core, event
 import math
 import time
-from objects import Canvas, Experiment, Design
 import pandas as pd
 import numpy as np
+
+
+#from code.objects import Canvas, Experiment, Design
+from code.Canvas import Canvas
+from code.Design import Design
+from code.Experiment import Experiment
+
 
 #participantid = int(raw_input("Please enter participant id: "))
 #day = int(raw_input("Please enter session number: "))
