@@ -7,7 +7,7 @@ from multi_target.Experiment import Experiment
 #participantid = int(raw_input("Please enter participant id: "))
 #day = int(raw_input("Please enter session number: "))
 
-day=2
+day=1
 participantid=1
 
 
@@ -19,6 +19,7 @@ canvas = Canvas(disp)
 experiment = Experiment(canvas, Design("stimuli.csv", 2,2), day, participantid)
 print(experiment.counterbalance)
 #experiment.block(design.data['day_1_block_1'].loc[:,'stim'])
+experiment.recmem_block("multi")
 experiment.run_both_blocks()
 #print(stim["Words"])
 #print(stim.values)

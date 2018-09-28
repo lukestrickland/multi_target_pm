@@ -46,6 +46,13 @@ class Experiment():
         core.wait(0.25)
         resp = event.waitKeys(timeStamped=True)
 
+    def recmem_leadup(self):
+        self.canvas.clear()
+        self.canvas.text('RECMEM'+ ' '.join(self.design.multi_cond_words))
+        self.canvas.show()
+        core.wait(0.25)
+        resp = event.waitKeys(timeStamped=True)
+    
     def single_leadup(self):
         self.canvas.clear()
         self.canvas.text(ldt_instructions+ ' '.join(self.design.single_cond_words))
@@ -89,6 +96,21 @@ class Experiment():
                 self.canvas.close_display()
                 core.quit()
         return choices, RTs
+
+    def recmem_block(self, btype):
+        self.recmem_leadup()
+        lures = pd.read_csv('recmem_words.csv', header=None)
+        lures = lures[0:8]
+        stim = pd.concat([lures, self.design.multi_cond_words])
+        choices, RTs = self.block(stim.iloc[:,0])
+        perf = pd.DataFrame({'RT': RTs, 'R':choices})
+        perf['block'] = self.blocknum
+        perf['day'] = self.day
+        perf['cond'] = btype
+        self.perf_data['RM' + 'day_' + str(self.day) + '_block_' + str(self.blocknum)] =   pd.concat([
+            self.design.data['day_' + str(self.day) + '_block_' + str(
+            self.blocknum)], 
+        perf], axis=1, sort=False)     
 
     def save_data(self):
         for j in range(1, self.design.blocks+1):
