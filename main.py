@@ -5,34 +5,26 @@ from objects import Canvas, Experiment, Design
 import pandas as pd
 import numpy as np
 
+#participantid = int(raw_input("Please enter participant id: "))
+#day = int(raw_input("Please enter session number: "))
+
+day=2
+participantid=1
+
+print(day + 3)
+
 # Initialise a new Display instance
-#disp = visual.Window(color=(-1,-1,-1))
+disp = visual.Window(color=(-1,-1,-1))
 # Initialise a new EyeTracker instancep
 # Get the handle to the active Window
-#canvas = Canvas(disp)
-#experiment = Experiment(canvas, "a")
+canvas = Canvas(disp)
+#
 
-
-design=Design("stimuli.csv", 1, 1, 2,2)
-
-design.read_data()
-print(design.data)
-print("before")
-
-design.set_stim()
-print(design.data)
-design.set_pm_positions()
-#print(design.newdata)
-print(design.pm_positions)
-
-design.create_blocks()
-#print(design.tmp)
-print(design.data)
-
-design.insert_pm()
-print(design.data)
-design.setup_data()
+experiment = Experiment(canvas, Design("stimuli.csv", 2,2), day, participantid)
+print(experiment.counterbalance)
+#experiment.block(design.data['day_1_block_1'].loc[:,'stim'])
+experiment.run_both_blocks()
 #print(stim["Words"])
 #print(stim.values)
 
-#canvas.close_display
+canvas.close_display

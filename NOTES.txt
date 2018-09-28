@@ -1,0 +1,13 @@
+#train to perfect recall
+maybe something like a random order mix of 50% targets and 50% drawn 
+form or word pool until they do two perfect runs through the set,
+ then one list of 20 half targets half not at the end? 
+
+300 trials
+3 cant be PM
+297 - 1 PM trial every 10 ongoing 
+
+x 8 = 2400 total trials
+
+8 PM targets versus 1 PM target, so 18 
+stimuli reserved for PM 
