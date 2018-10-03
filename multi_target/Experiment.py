@@ -39,6 +39,22 @@ class Experiment():
         self.canvas.show()
         return resp[0][0], resp[0][1] - t0
 
+    def create_instructions(self, blocktype):
+        if(blocktype=='multi'):
+            instructions = ldt_instructions+ ' '.join(self.design.multi_cond_words)
+        elif(blocktype=='single'):
+            instructions = ldt_instructions+ ' '.join(self.design.single_cond_words)
+        elif(blocktype=='recmem'):
+            instructions = 'RECMEM'+ ' '.join(self.design.multi_cond_words)
+        return instructions
+ 
+    def print_instructions(self, instructions):
+        self.canvas.clear()
+        self.canvas.text(instructions)
+        self.canvas.show()
+        core.wait(0.25)
+        resp = event.waitKeys(timeStamped=True)       
+
     def multi_leadup(self):
         self.canvas.clear()
         self.canvas.text(ldt_instructions+ ' '.join(self.design.multi_cond_words))
@@ -58,13 +74,14 @@ class Experiment():
         self.canvas.text(ldt_instructions+ ' '.join(self.design.single_cond_words))
         self.canvas.show()
         core.wait(0.25)
-        resp = event.waitKeys(timeStamped=True)        
+        resp = event.waitKeys(timeStamped=True)    
+
+    def block_leadup(self, blocktype):
+        block_instructions = self.create_instructions(blocktype)
+        self.print_instructions(block_instructions)
 
     def run_block(self, btype):
-        if (btype=='multi'):
-            self.multi_leadup()
-        else:
-            self.single_leadup()
+        self.block_leadup(btype)
         choices, RTs = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)].loc[:,'stim'])
         perf = pd.DataFrame({'RT': RTs, 'R':choices})
@@ -101,8 +118,23 @@ class Experiment():
         self.recmem_leadup()
         lures = pd.read_csv('recmem_words.csv', header=None)
         lures = lures[0:8]
-        stim = pd.concat([lures, self.design.multi_cond_words])
-        choices, RTs = self.block(stim.iloc[:,0])
+        targets = self.design.multi_cond_words.copy()
+        lures['corr'] = "n"
+        targets['corr'] = "y"
+        stim = pd.concat([lures, targets])
+
+        while True:
+            choices, RTs = self.block(stim.iloc[:,0])
+            match = [i==j for i, j in zip(choices, stim['corr'].values.tolist())]
+            if all(match):
+                break
+            else:
+                self.canvas.clear()
+                self.canvas.text('try again')  
+                self.canvas.show() 
+                core.wait(3)
+
+
         perf = pd.DataFrame({'RT': RTs, 'R':choices})
         perf['block'] = self.blocknum
         perf['day'] = self.day
