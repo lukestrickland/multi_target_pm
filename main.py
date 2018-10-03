@@ -19,11 +19,13 @@ canvas = Canvas(disp)
 experiment = Experiment(canvas, Design("stimuli.csv", 2,2), day, participantid)
 print(experiment.counterbalance)
 #experiment.block(design.data['day_1_block_1'].loc[:,'stim'])
-experiment.recmem_block("multi")
+
+
+#experiment.recmem_block("multi")
 experiment.run_both_blocks()
 #print(stim["Words"])
 #print(stim.values)
 
-print(experiment.perf_data)
-experiment.save_data()
+#print(experiment.perf_data)
+#experiment.save_data()
 experiment.canvas.close_display

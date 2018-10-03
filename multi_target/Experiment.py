@@ -10,6 +10,9 @@ class Experiment():
         self.perf_data = {}
         self.canvas = canvas
         self.design = design
+        self.Word_response = 'd'
+        self.PM_response = 'j'
+        self.design = design
         self.bal = participantid % 2 
         self.counterbalance = [np.array([["single", "multi"], ["multi", "single"]]),
         np.array([["multi", "single"], ["single", "multi"]])][self.bal]
@@ -21,8 +24,17 @@ class Experiment():
             self.design.create_blocks()
             self.design.insert_pm(self.counterbalance)
             self.design.setup_data(participantid, self.counterbalance)
+            recmem_nontargets = pd.read_csv('recmem_nontargets.csv', header=None)
+            recmem_nontargets = recmem_nontargets.sample(frac=1)
+            recmem_nontargets.reset_index(inplace=True, drop=True)
+            recmem_nontargets.to_csv("tmp/p" +str(self.participantid)+ "recmem_nontargets" + ".csv")
         else:
             self.design.read_data(participantid)
+
+        self.todays_multi = self.design.multi_cond_words.copy().iloc[
+        range((self.day-1)*8,(self.day-1)*8+8)]
+        self.todays_single = self.design.single_cond_words.copy().iloc[
+                self.day-1]    
 
     def trial(self, stim):
         self.canvas.fixcross()
@@ -41,12 +53,28 @@ class Experiment():
 
     def create_instructions(self, blocktype):
         if(blocktype=='multi'):
-            instructions = ldt_instructions+ ' '.join(self.design.multi_cond_words)
+            instruction1 = ("We have an interest in your ability to remember to perform actions in the future. " +
+            "In the next block of lexical decision trials, for EIGHT target words we would like you to then press " +
+            self.PM_response +" INSTEAD of "+ self.Word_response +". On the next slide, we will present to you the target words to memorize.")
+
+            instruction2 = ("Please remember the following target words \n\n"+
+             ' '.join(self.todays_multi) +
+            "\n\n Once you have tried to memorize them, we want to test you." +
+            " You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. ")
+
         elif(blocktype=='single'):
-            instructions = ldt_instructions+ ' '.join(self.design.single_cond_words)
-        elif(blocktype=='recmem'):
-            instructions = 'RECMEM'+ ' '.join(self.design.multi_cond_words)
-        return instructions
+            instruction1 =("We have an interest in your ability to remember to perform actions in the future."+
+            "In the next block of lexical decision trials, for ONE target word we would like you to then press "+
+            self.PM_response,"INSTEAD of", self.Word_response,". On the next slide, we will present to you the target word to memorize.")
+
+            instruction2 = ("Please remember the following:"+
+            "Once you are finished memorizing, you will be tested on your recognition of the words." +
+            "You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. "+
+            'The target words are:'
+             ' '.join(self.todays_single) +
+             "Please press any key to proceed to your memory test.")
+
+        return instruction1, instruction2
  
     def print_instructions(self, instructions):
         self.canvas.clear()
@@ -55,30 +83,11 @@ class Experiment():
         core.wait(0.25)
         resp = event.waitKeys(timeStamped=True)       
 
-    def multi_leadup(self):
-        self.canvas.clear()
-        self.canvas.text(ldt_instructions+ ' '.join(self.design.multi_cond_words))
-        self.canvas.show()
-        core.wait(0.25)
-        resp = event.waitKeys(timeStamped=True)
-
-    def recmem_leadup(self):
-        self.canvas.clear()
-        self.canvas.text('RECMEM'+ ' '.join(self.design.multi_cond_words))
-        self.canvas.show()
-        core.wait(0.25)
-        resp = event.waitKeys(timeStamped=True)
-    
-    def single_leadup(self):
-        self.canvas.clear()
-        self.canvas.text(ldt_instructions+ ' '.join(self.design.single_cond_words))
-        self.canvas.show()
-        core.wait(0.25)
-        resp = event.waitKeys(timeStamped=True)    
-
     def block_leadup(self, blocktype):
-        block_instructions = self.create_instructions(blocktype)
+        block_instructions, recmem_instructions = self.create_instructions(blocktype)
         self.print_instructions(block_instructions)
+        self.print_instructions(recmem_instructions)
+        self.recmem_block(blocktype)
 
     def run_block(self, btype):
         self.block_leadup(btype)
@@ -115,22 +124,36 @@ class Experiment():
         return choices, RTs
 
     def recmem_block(self, btype):
-        self.recmem_leadup()
-        lures = pd.read_csv('recmem_words.csv', header=None)
-        lures = lures[0:8]
-        targets = self.design.multi_cond_words.copy()
-        lures['corr'] = "n"
-        targets['corr'] = "y"
-        stim = pd.concat([lures, targets])
-
         while True:
+            full_nontargets = pd.read_csv("tmp/p" +str(self.participantid)+ 
+            "recmem_nontargets" + ".csv")
+            nontargets = full_nontargets.copy().iloc[0:8,1].to_frame()
+            next_nontargets = full_nontargets.copy().loc[range(8, len(full_nontargets)), :] 
+            next_nontargets.reset_index(inplace=True, drop=True)
+            next_nontargets.to_csv("tmp/p" +str(self.participantid)+ 
+            "recmem_nontargets" + ".csv", index=False)                    
+            if (btype=='multi'):
+                targets = self.todays_multi.copy().to_frame()
+            else:
+                targets = self.todays_single.copy.to_frame()
+
+            nontargets['corr'] = "n"
+            nontargets = nontargets.rename(columns={'0' : 'Words'})
+            targets['corr'] = "y"
+            stim = pd.concat([nontargets, targets])
+            stim = stim.sample(frac=1)
+            stim.reset_index(inplace=True, drop=True)
             choices, RTs = self.block(stim.iloc[:,0])
             match = [i==j for i, j in zip(choices, stim['corr'].values.tolist())]
             if all(match):
+                self.canvas.clear()
+                self.canvas.text('100% accuracy, great job!')  
+                self.canvas.show() 
+                core.wait(3)
                 break
             else:
                 self.canvas.clear()
-                self.canvas.text('try again')  
+                self.canvas.text('Oops, you missed 100% accuracy, please try again')  
                 self.canvas.show() 
                 core.wait(3)
 

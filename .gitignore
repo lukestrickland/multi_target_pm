@@ -2,3 +2,4 @@ data/*
 tmp/*
 *.pdf
 *.pyc
+recmem_nontargets.csv
