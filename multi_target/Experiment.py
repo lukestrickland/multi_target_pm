@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 instruct_delay = 0
-puzzle_time = 0
+puzzle_time = 3
 
 
 class Experiment():
@@ -14,6 +14,7 @@ class Experiment():
         self.design = design
         #read in response key counterbalance from csv
         keybalance = pd.read_csv("items/keybalance.csv").iloc[:,0] - 1
+
         responsekey_list = ({"word": 'd', "won-word" : 's', "pm" : 'j'},
                             {"word": 's', "won-word" : 'd', "pm" : 'j'},
                             {"word": 'j', "won-word" : 'k', "pm" : 'd'},
@@ -54,12 +55,12 @@ class Experiment():
         t0 = core.getTime()
         self.canvas.show()
         resp = event.waitKeys(timeStamped=True)
-        self.canvas.clear()
+        self.canvas.clear()    
         self.canvas.show()
         return resp[0][0], resp[0][1] - t0
 
-    def create_instructions(self, blocktype):
-        if(blocktype=='multi'):
+    def create_instructions(self, btype):
+        if(btype=='multi'):
             instruction1 = ("We have an interest in your ability to remember to perform actions in the future. " +
             "In the next block of lexical decision trials, for EIGHT target words we would like you to then press " +
             self.responsekeys['pm'] +" INSTEAD of "+ self.responsekeys['word'] +". On the next slide, we will present to you the target words to memorize.")
@@ -69,7 +70,7 @@ class Experiment():
             "\n\n Once you have tried to memorize them, we want to test you." +
             " You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. ")
 
-        elif(blocktype=='single'):
+        elif(btype=='single'):
             instruction1 =("We have an interest in your ability to remember to perform actions in the future."+
             "In the next block of lexical decision trials, for ONE target word we would like you to then press "+
             self.responsekeys['pm'],"INSTEAD of", self.responsekeys['word'],". On the next slide, we will present to you the target word to memorize.")
@@ -90,11 +91,11 @@ class Experiment():
         if (waitkey is not None):
             resp = event.waitKeys(keyList= [waitkey], timeStamped=True)       
 
-    def block_leadup(self, blocktype):
-        block_instructions, recmem_instructions = self.create_instructions(blocktype)
+    def block_leadup(self, btype):
+        block_instructions, recmem_instructions = self.create_instructions(btype)
         self.print_instructions(block_instructions, instruct_delay, 'n')
         self.print_instructions(recmem_instructions, instruct_delay, 'n')
-        self.recmem_block(blocktype)
+        self.recmem_block(btype)
         self.canvas.clear()
         self.puzzle()
        
@@ -132,8 +133,8 @@ class Experiment():
                 core.quit()
         return choices, RTs
 
-    def recmem_block(self, btype):
-        while True:
+    def recmem_newstim(self, btype):
+        #Shuffle in new rec-mem non-targets each loop from a csv
             full_nontargets = pd.read_csv("tmp/p" +str(self.participantid)+ 
             "recmem_nontargets" + ".csv")
             nontargets = full_nontargets.copy().iloc[0:8,1].to_frame()
@@ -155,21 +156,20 @@ class Experiment():
                 stim = pd.concat([nontargets.iloc[[0],:], targets])    
             stim = stim.sample(frac=1)
             stim.reset_index(inplace=True, drop=True)
+            return(stim)
+
+    def recmem_block(self, btype):
+      #run recmem trials til 100% accuracy  
+        while True:
+            stim = self.recmem_newstim(btype)
             choices, RTs = self.block(stim.iloc[:,0])
             match = [i==j for i, j in zip(choices, stim['corr'].values.tolist())]
             if all(match):
-                self.canvas.clear()
-                self.canvas.text('100% accuracy, great job!')  
-                self.canvas.show() 
-                core.wait(3)
+                self.print_instructions('100% accuracy, great job!', 3, 'n')  
                 break
             else:
-                self.canvas.clear()
-                self.canvas.text('Oops, you missed 100% accuracy, please try again')  
-                self.canvas.show() 
-                core.wait(3)
-
-
+                 self.print_instructions('Oops, you missed 100% accuracy, please try again', 3, 'n') 
+       #collect data          
         perf = pd.DataFrame({'RT': RTs, 'R':choices})
         perf['block'] = self.blocknum
         perf['day'] = self.day
@@ -183,12 +183,7 @@ class Experiment():
         self.print_instructions('Before you complete the experimental trials we would like you to complete a sudoku puzzle.\\n' +
         'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.', 
         puzzle_time)
-        self.canvas.show()
-        core.wait(3)
-        self.canvas.clear()
-        self.canvas.text('It is now time to complete the task. Please rest your fingers on the KEYS and then press space')
-        self.canvas.show()
-        event.waitKeys(timeStamped=True)
+        self.print_instructions('It is now time to complete the task. Please rest your fingers on the KEYS and then press space', 1, 'n')
 
     def save_data(self):
         for j in range(1, self.design.blocks+1):
