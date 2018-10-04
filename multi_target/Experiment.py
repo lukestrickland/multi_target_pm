@@ -53,8 +53,7 @@ class Experiment():
         core.wait(0.25)
         pre_stim_resps = event.getKeys()
         self.canvas.text(stim)
-        t0 = core.getTime()
-        self.canvas.show()
+        t0 = self.canvas.show()
         resp = event.waitKeys(timeStamped=True)
         self.canvas.clear()    
         self.canvas.show()
@@ -88,9 +87,15 @@ class Experiment():
         self.canvas.clear()
         self.canvas.text(instructions)
         self.canvas.show()
-        core.wait(delay)
+        core.wait(2)
+        if event.getKeys(['escape']):
+            self.canvas.close_display()
+            core.quit()      
         if (waitkey is not None):
-            resp = event.waitKeys(keyList= [waitkey], timeStamped=True)       
+            resp = event.waitKeys(keyList= [waitkey, 'escape'], timeStamped=True)
+            if (resp[0][0]=='escape'):
+                self.canvas.close_display()
+                core.quit()    
 
     def block_leadup(self, btype):
         block_instructions, recmem_instructions = self.create_instructions(btype)
@@ -104,10 +109,8 @@ class Experiment():
         self.block_leadup(btype)
         choices, RTs, pre_stim_resps = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)].loc[:,'stim'])
-        perf = pd.DataFrame({'RT': RTs, 'R':choices, 'prestim_R':pre_stim_resps})
-        perf['block'] = self.blocknum
-        perf['day'] = self.day
-        perf['cond'] = btype
+        perf = pd.DataFrame({'RT': RTs, 'R':choices, 'prestim_R':pre_stim_resps, 
+                             'block':self.blocknum, 'day':self.day, 'cond':btype})
         self.perf_data['day_' + str(self.day) + '_block_' + str(self.blocknum)] =   pd.concat([
             self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)], 
