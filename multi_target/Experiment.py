@@ -12,6 +12,7 @@ class Experiment():
         self.perf_data = {}
         self.canvas = canvas
         self.design = design
+        self.rm_count = 1
         #read in response key counterbalance from csv
         keybalance = pd.read_csv("items/keybalance.csv").iloc[:,0] - 1
 
@@ -163,22 +164,25 @@ class Experiment():
         while True:
             stim = self.recmem_newstim(btype)
             choices, RTs = self.block(stim.iloc[:,0])
+            #Update recmem saved data
+            perf = pd.DataFrame({'RT': RTs, 'R':choices, 'block':self.blocknum,
+                        'day':self.day, 'cond':btype, 'stim' : stim.loc[range(0, len(RTs)),'Words'],
+                        'C' : stim.loc[range(0, len(RTs)),'corr'], 'count': self.rm_count})
+            if (self.rm_count==1):
+                perf.to_csv("data/RM_p" +str(self.participantid)+ "_day_" + str(self.day)+ ".csv", index=False)
+            elif(self.rm_count>1):
+                old_perf = pd.read_csv("data/RM_p" +str(self.participantid)+ "_day_" + str(self.day)+ ".csv")
+                new_perf = old_perf.append(perf)
+                new_perf.to_csv("data/RM_p" +str(self.participantid)+ "_day_" + str(self.day)+ ".csv", index=False)
+            self.rm_count += 1
+            #check if all answers correct
             match = [i==j for i, j in zip(choices, stim['corr'].values.tolist())]
             if all(match):
                 self.print_instructions('100% accuracy, great job!', 3, 'n')  
                 break
             else:
                  self.print_instructions('Oops, you missed 100% accuracy, please try again', 3, 'n') 
-       #collect data          
-        perf = pd.DataFrame({'RT': RTs, 'R':choices})
-        perf['block'] = self.blocknum
-        perf['day'] = self.day
-        perf['cond'] = btype
-        self.perf_data['RM' + 'day_' + str(self.day) + '_block_' + str(self.blocknum)] =   pd.concat([
-            self.design.data['day_' + str(self.day) + '_block_' + str(
-            self.blocknum)], 
-        perf], axis=1, sort=False)     
-
+     
     def puzzle(self):
         self.print_instructions('Before you complete the experimental trials we would like you to complete a sudoku puzzle.\\n' +
         'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.', 
