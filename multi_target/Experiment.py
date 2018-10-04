@@ -58,7 +58,7 @@ class Experiment():
         resp = event.waitKeys(timeStamped=True)
         self.canvas.clear()    
         self.canvas.show()
-        return resp[0][0], resp[0][1] - t0
+        return resp[0][0], resp[0][1] - t0, pre_stim_resps
 
     def create_instructions(self, btype):
         if(btype=='multi'):
@@ -102,9 +102,9 @@ class Experiment():
        
     def run_block(self, btype):
         self.block_leadup(btype)
-        choices, RTs = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
+        choices, RTs, pre_stim_resps = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)].loc[:,'stim'])
-        perf = pd.DataFrame({'RT': RTs, 'R':choices})
+        perf = pd.DataFrame({'RT': RTs, 'R':choices, 'prestim_R':pre_stim_resps})
         perf['block'] = self.blocknum
         perf['day'] = self.day
         perf['cond'] = btype
@@ -122,17 +122,19 @@ class Experiment():
     def block(self, trials):
         RTs = []
         choices = []
+        pre_stim = []
         #len(trials)
         ntrials=2
         for i in range(0,ntrials):           
-            choice, RT = self.trial(trials[i])
+            choice, RT, pre_stim_resps = self.trial(trials[i])
             RTs.append(RT)
             choices.append(choice)
-            core.wait(0.5)
+            pre_stim.append (pre_stim_resps)
+            core.wait(2)
             if event.getKeys(['escape']):
                 self.canvas.close_display()
                 core.quit()
-        return choices, RTs
+        return choices, RTs, pre_stim
 
     def recmem_newstim(self, btype):
         #Shuffle in new rec-mem non-targets each loop from a csv
@@ -163,11 +165,12 @@ class Experiment():
       #run recmem trials til 100% accuracy  
         while True:
             stim = self.recmem_newstim(btype)
-            choices, RTs = self.block(stim.iloc[:,0])
+            choices, RTs, pre_stim_resps = self.block(stim.iloc[:,0])
             #Update recmem saved data
             perf = pd.DataFrame({'RT': RTs, 'R':choices, 'block':self.blocknum,
                         'day':self.day, 'cond':btype, 'stim' : stim.loc[range(0, len(RTs)),'Words'],
-                        'C' : stim.loc[range(0, len(RTs)),'corr'], 'count': self.rm_count})
+                        'C' : stim.loc[range(0, len(RTs)),'corr'], 'count': self.rm_count,
+                        'prestim_R':pre_stim_resps})
             if (self.rm_count==1):
                 perf.to_csv("data/RM_p" +str(self.participantid)+ "_day_" + str(self.day)+ ".csv", index=False)
             elif(self.rm_count>1):
