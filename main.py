@@ -16,7 +16,7 @@ disp = visual.Window(color=(-1,-1,-1))
 canvas = Canvas(disp)
 #
 
-experiment = Experiment(canvas, Design("stimuli.csv", 2,2), day, participantid)
+experiment = Experiment(canvas, Design("items/stimuli.csv", 2,2), day, participantid)
 print(experiment.counterbalance)
 #experiment.block(design.data['day_1_block_1'].loc[:,'stim'])
 

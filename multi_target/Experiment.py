@@ -2,7 +2,9 @@ from psychopy import core, event
 import numpy as np
 import pandas as pd
 
-ldt_instructions = "In the next block of trials, you will again perform \n\n"
+instruct_delay = 0
+puzzle_time = 0
+
 
 class Experiment():
     def __init__(self, canvas, design, day, participantid):
@@ -10,8 +12,14 @@ class Experiment():
         self.perf_data = {}
         self.canvas = canvas
         self.design = design
-        self.Word_response = 'd'
-        self.PM_response = 'j'
+        #read in response key counterbalance from csv
+        keybalance = pd.read_csv("items/keybalance.csv").iloc[:,0] - 1
+        responsekey_list = ({"word": 'd', "won-word" : 's', "pm" : 'j'},
+                            {"word": 's', "won-word" : 'd', "pm" : 'j'},
+                            {"word": 'j', "won-word" : 'k', "pm" : 'd'},
+                            {"word": 'k', "won-word" : 'j', "pm" : 'd'})
+
+        self.responsekeys = responsekey_list[self.participantid % 4]
         self.design = design
         self.bal = participantid % 2 
         self.counterbalance = [np.array([["single", "multi"], ["multi", "single"]]),
@@ -24,7 +32,7 @@ class Experiment():
             self.design.create_blocks()
             self.design.insert_pm(self.counterbalance)
             self.design.setup_data(participantid, self.counterbalance)
-            recmem_nontargets = pd.read_csv('recmem_nontargets.csv', header=None)
+            recmem_nontargets = pd.read_csv('items/recmem_nontargets.csv', header=None)
             recmem_nontargets = recmem_nontargets.sample(frac=1)
             recmem_nontargets.reset_index(inplace=True, drop=True)
             recmem_nontargets.to_csv("tmp/p" +str(self.participantid)+ "recmem_nontargets" + ".csv")
@@ -34,6 +42,7 @@ class Experiment():
         self.todays_multi = self.design.multi_cond_words.to_frame().copy().iloc[
         range((self.day-1)*8,(self.day-1)*8+8), :]
         self.todays_single = self.design.single_cond_words.to_frame().copy().iloc[[self.day-1]]
+
     def trial(self, stim):
         self.canvas.fixcross()
         core.wait(0.5)
@@ -53,7 +62,7 @@ class Experiment():
         if(blocktype=='multi'):
             instruction1 = ("We have an interest in your ability to remember to perform actions in the future. " +
             "In the next block of lexical decision trials, for EIGHT target words we would like you to then press " +
-            self.PM_response +" INSTEAD of "+ self.Word_response +". On the next slide, we will present to you the target words to memorize.")
+            self.responsekeys['pm'] +" INSTEAD of "+ self.responsekeys['word'] +". On the next slide, we will present to you the target words to memorize.")
 
             instruction2 = ("Please remember the following target words \n\n"+
              ' '.join(self.todays_multi.values.flatten()) +
@@ -63,7 +72,7 @@ class Experiment():
         elif(blocktype=='single'):
             instruction1 =("We have an interest in your ability to remember to perform actions in the future."+
             "In the next block of lexical decision trials, for ONE target word we would like you to then press "+
-            self.PM_response,"INSTEAD of", self.Word_response,". On the next slide, we will present to you the target word to memorize.")
+            self.responsekeys['pm'],"INSTEAD of", self.responsekeys['word'],". On the next slide, we will present to you the target word to memorize.")
 
             instruction2 = ("Please remember the following:"+
             "Once you are finished memorizing, you will be tested on your recognition of the words." +
@@ -73,22 +82,22 @@ class Experiment():
              "Please press any key to proceed to your memory test.")
         return instruction1, instruction2
  
-    def print_instructions(self, instructions):
+    def print_instructions(self, instructions, delay, waitkey= None):
         self.canvas.clear()
         self.canvas.text(instructions)
         self.canvas.show()
-        core.wait(0.25)
-        resp = event.waitKeys(timeStamped=True)       
+        core.wait(delay)
+        if (waitkey is not None):
+            resp = event.waitKeys(keyList= [waitkey], timeStamped=True)       
 
     def block_leadup(self, blocktype):
         block_instructions, recmem_instructions = self.create_instructions(blocktype)
-        self.print_instructions(block_instructions)
-        self.print_instructions(recmem_instructions)
+        self.print_instructions(block_instructions, instruct_delay, 'n')
+        self.print_instructions(recmem_instructions, instruct_delay, 'n')
         self.recmem_block(blocktype)
         self.canvas.clear()
         self.puzzle()
        
-
     def run_block(self, btype):
         self.block_leadup(btype)
         choices, RTs = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
@@ -171,8 +180,9 @@ class Experiment():
         perf], axis=1, sort=False)     
 
     def puzzle(self):
-        self.canvas.text('Before you complete the experimental trials we would like you to complete a sudoku puzzle.\\n' +
-        'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.')
+        self.print_instructions('Before you complete the experimental trials we would like you to complete a sudoku puzzle.\\n' +
+        'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.', 
+        puzzle_time)
         self.canvas.show()
         core.wait(3)
         self.canvas.clear()
