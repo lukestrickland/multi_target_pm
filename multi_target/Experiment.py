@@ -31,11 +31,9 @@ class Experiment():
         else:
             self.design.read_data(participantid)
 
-        self.todays_multi = self.design.multi_cond_words.copy().iloc[
-        range((self.day-1)*8,(self.day-1)*8+8)]
-        self.todays_single = self.design.single_cond_words.copy().iloc[
-                self.day-1]    
-
+        self.todays_multi = self.design.multi_cond_words.to_frame().copy().iloc[
+        range((self.day-1)*8,(self.day-1)*8+8), :]
+        self.todays_single = self.design.single_cond_words.to_frame().copy().iloc[[self.day-1]]
     def trial(self, stim):
         self.canvas.fixcross()
         core.wait(0.5)
@@ -58,7 +56,7 @@ class Experiment():
             self.PM_response +" INSTEAD of "+ self.Word_response +". On the next slide, we will present to you the target words to memorize.")
 
             instruction2 = ("Please remember the following target words \n\n"+
-             ' '.join(self.todays_multi) +
+             ' '.join(self.todays_multi.values.flatten()) +
             "\n\n Once you have tried to memorize them, we want to test you." +
             " You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. ")
 
@@ -71,9 +69,8 @@ class Experiment():
             "Once you are finished memorizing, you will be tested on your recognition of the words." +
             "You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. "+
             'The target words are:'
-             ' '.join(self.todays_single) +
+             ' '.join(self.todays_single.values.flatten()) +
              "Please press any key to proceed to your memory test.")
-
         return instruction1, instruction2
  
     def print_instructions(self, instructions):
@@ -88,6 +85,9 @@ class Experiment():
         self.print_instructions(block_instructions)
         self.print_instructions(recmem_instructions)
         self.recmem_block(blocktype)
+        self.canvas.clear()
+        self.puzzle()
+       
 
     def run_block(self, btype):
         self.block_leadup(btype)
@@ -133,14 +133,17 @@ class Experiment():
             next_nontargets.to_csv("tmp/p" +str(self.participantid)+ 
             "recmem_nontargets" + ".csv", index=False)                    
             if (btype=='multi'):
-                targets = self.todays_multi.copy().to_frame()
+                targets = self.todays_multi.copy()
             else:
-                targets = self.todays_single.copy.to_frame()
+                targets = self.todays_single.copy()
 
             nontargets['corr'] = "n"
             nontargets = nontargets.rename(columns={'0' : 'Words'})
             targets['corr'] = "y"
-            stim = pd.concat([nontargets, targets])
+            if (btype=='multi'):
+                stim = pd.concat([nontargets, targets])
+            else:
+                stim = pd.concat([nontargets.iloc[[0],:], targets])    
             stim = stim.sample(frac=1)
             stim.reset_index(inplace=True, drop=True)
             choices, RTs = self.block(stim.iloc[:,0])
@@ -166,6 +169,16 @@ class Experiment():
             self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)], 
         perf], axis=1, sort=False)     
+
+    def puzzle(self):
+        self.canvas.text('Before you complete the experimental trials we would like you to complete a sudoku puzzle.\\n' +
+        'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.')
+        self.canvas.show()
+        core.wait(3)
+        self.canvas.clear()
+        self.canvas.text('It is now time to complete the task. Please rest your fingers on the KEYS and then press space')
+        self.canvas.show()
+        event.waitKeys(timeStamped=True)
 
     def save_data(self):
         for j in range(1, self.design.blocks+1):
