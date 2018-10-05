@@ -2,8 +2,8 @@ from psychopy import core, event
 import numpy as np
 import pandas as pd
 
-instruct_delay = 0
-puzzle_time = 3
+instruct_delay = 1
+puzzle_time = 5
 
 
 class Experiment():
@@ -16,10 +16,10 @@ class Experiment():
         #read in response key counterbalance from csv
         keybalance = pd.read_csv("items/keybalance.csv").iloc[:,0] - 1
 
-        responsekey_list = ({"word": 'd', "won-word" : 's', "pm" : 'j'},
-                            {"word": 's', "won-word" : 'd', "pm" : 'j'},
-                            {"word": 'j', "won-word" : 'k', "pm" : 'd'},
-                            {"word": 'k', "won-word" : 'j', "pm" : 'd'})
+        responsekey_list = ({"word": 'd', "nonword" : 's', "pm" : 'j'},
+                            {"word": 's', "nonword" : 'd', "pm" : 'j'},
+                            {"word": 'j', "nonword" : 'k', "pm" : 'd'},
+                            {"word": 'k', "nonword" : 'j', "pm" : 'd'})
 
         self.responsekeys = responsekey_list[self.participantid % 4]
         self.design = design
@@ -31,8 +31,8 @@ class Experiment():
         if day ==1:
             self.design.set_stim(self.counterbalance)
             self.design.set_pm_positions()
-            self.design.create_blocks()
-            self.design.insert_pm(self.counterbalance)
+            self.design.create_blocks(self.responsekeys)
+            self.design.insert_pm(self.counterbalance, self.responsekeys)
             self.design.setup_data(participantid, self.counterbalance)
             recmem_nontargets = pd.read_csv('items/recmem_nontargets.csv', header=None)
             recmem_nontargets = recmem_nontargets.sample(frac=1)
@@ -45,7 +45,7 @@ class Experiment():
         range((self.day-1)*8,(self.day-1)*8+8), :]
         self.todays_single = self.design.single_cond_words.to_frame().copy().iloc[[self.day-1]]
 
-    def trial(self, stim):
+    def trial(self, stim, corr):
         self.canvas.fixcross()
         core.wait(0.5)
         self.canvas.clear()
@@ -55,6 +55,12 @@ class Experiment():
         self.canvas.text(stim)
         t0 = self.canvas.show()
         resp = event.waitKeys(timeStamped=True)
+        #Not statement to deal with correct ldt responses on PM trials
+        if resp[0][0]!=corr and not (corr=='p' and resp[0][0]=='w'):
+            self.canvas.clear()    
+            self.canvas.text("INCORRECT") 
+            self.canvas.show()
+            core.wait(1)
         self.canvas.clear()    
         self.canvas.show()
         return resp[0][0], resp[0][1] - t0, pre_stim_resps
@@ -87,7 +93,7 @@ class Experiment():
         self.canvas.clear()
         self.canvas.text(instructions)
         self.canvas.show()
-        core.wait(2)
+        core.wait(delay)
         if event.getKeys(['escape']):
             self.canvas.close_display()
             core.quit()      
@@ -108,7 +114,9 @@ class Experiment():
     def run_block(self, btype):
         self.block_leadup(btype)
         choices, RTs, pre_stim_resps = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
-            self.blocknum)].loc[:,'stim'])
+            self.blocknum)].loc[:,'stim'],
+            self.design.data['day_' + str(self.day) + '_block_' + str(
+            self.blocknum)].loc[:,'C'])
         perf = pd.DataFrame({'RT': RTs, 'R':choices, 'prestim_R':pre_stim_resps, 
                              'block':self.blocknum, 'day':self.day, 'cond':btype})
         self.perf_data['day_' + str(self.day) + '_block_' + str(self.blocknum)] =   pd.concat([
@@ -122,18 +130,18 @@ class Experiment():
         for block in range(0,2):
             self.run_block(self.counterbalance[self.day-1, block])
 
-    def block(self, trials):
+    def block(self, trials, corrs):
         RTs = []
         choices = []
         pre_stim = []
         #len(trials)
         ntrials=2
         for i in range(0,ntrials):           
-            choice, RT, pre_stim_resps = self.trial(trials[i])
+            choice, RT, pre_stim_resps = self.trial(trials[i], corrs[i])
             RTs.append(RT)
             choices.append(choice)
             pre_stim.append (pre_stim_resps)
-            core.wait(2)
+            core.wait(0.5)
             if event.getKeys(['escape']):
                 self.canvas.close_display()
                 core.quit()
@@ -168,7 +176,7 @@ class Experiment():
       #run recmem trials til 100% accuracy  
         while True:
             stim = self.recmem_newstim(btype)
-            choices, RTs, pre_stim_resps = self.block(stim.iloc[:,0])
+            choices, RTs, pre_stim_resps = self.block(stim.iloc[:,0], stim.iloc[:,1])
             #Update recmem saved data
             perf = pd.DataFrame({'RT': RTs, 'R':choices, 'block':self.blocknum,
                         'day':self.day, 'cond':btype, 'stim' : stim.loc[range(0, len(RTs)),'Words'],
