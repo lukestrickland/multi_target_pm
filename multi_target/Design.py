@@ -35,7 +35,19 @@ class Design():
         stim_bothshuffled['Nonwords'] = stim_nwshuffled['Nonwords']
         self.shuffledstim = stim_bothshuffled
 
-
+    def practice_stim(self, Wkey, Nkey, pid):
+        pracstim = pd.read_csv("items/practice_stim.csv")
+        pracwords = pracstim.loc[:,"Words"].to_frame()
+        pracwords.rename(columns={'Words':'stim'}, inplace=True)
+        pracwords['S'] = "W"
+        pracwords['C'] = Wkey
+        pracnonwords = pracstim.loc[:,"Nonwords"].to_frame()
+        pracnonwords.rename(columns={'Nonwords':'stim'}, inplace=True)
+        pracnonwords['S'] = "N"
+        pracnonwords['C'] = Nkey
+        pracstim = pracwords.append(pracnonwords)
+        pracstim.to_csv("tmp/p" +str(pid)+ "_practice" + ".csv", index=False)
+        
     def set_stim(self, counterbalance):
         self.initial_shuffle()
         self.single_cond_words= self.shuffledstim.loc[0:1, "Words"]
@@ -138,8 +150,9 @@ class Design():
             day_dats = pd.DataFrame()
             for j in range(1, self.blocks+1):
                 data = self.data["day_" + str(i) + "_block_" + str(j)].copy()
-                data['R'] = -1
                 data['RT'] = -1
+                data['R'] = -1
+                data['prestim_R'] = -1
                 data['block'] = j
                 data['day'] = i
                 data['cond'] = counterbalance[i-1,j-1]
