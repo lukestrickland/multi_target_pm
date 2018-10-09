@@ -1,4 +1,5 @@
 from psychopy import core, event
+from Instructions import Instructions
 import numpy as np
 import pandas as pd
 
@@ -33,6 +34,7 @@ class Experiment():
                             {"word": 'k', "nonword" : 'j', "pm" : 'd'})
 
         self.responsekeys = responsekey_list[keybalance]
+        self.instructions = Instructions(self.responsekeys)
         self.OThand = 'LEFT'
         if self.responsekeys["word"] == 'j' or self.responsekeys["word"] == 'k':
             self.OThand = 'RIGHT'

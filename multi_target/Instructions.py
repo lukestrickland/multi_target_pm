@@ -23,7 +23,7 @@ class Instructions():
             " We will now present you the target words to memorize.")
 
             instruction2 = ("You have two minutes to memorize the following target words: \n\n"+
-             ' '.join(self.todays_multi.values.flatten()) +
+             ' '.join(target_s) +
             "\n\n Once you have tried to memorize them, we will test you.")
 
             instruction3 = ("We will now test your memory. \n\n" +
@@ -32,7 +32,7 @@ class Instructions():
             "Press space to begin.")
 
             instruction4 = ("Here are the target words that you just memorized: \n\n"+
-             ' '.join(self.todays_multi.values.flatten()) +
+             ' '.join(target_s) +
             " \n\n When you are presented any of these words during the the next block of lexical decision trials, we would like you to press "+
             self.responsekeys['pm']+" INSTEAD of "+ self.responsekeys['word'] +
             keyhands + "and use it to make your response if you see an item from your target list.\n\n " +
@@ -44,7 +44,7 @@ class Instructions():
             " We will now present you the target word to memorize.")
 
             instruction2 = ("You have two minutes to memorize the following target word \n\n"+
-             ' '.join(self.todays_single.values.flatten()) +
+             ' '.join(target_s) +
             "\n\n Once you have tried to memorize it, we will test you.")
 
             instruction3 = ("We will now test your memory. \n\n" +
@@ -53,7 +53,7 @@ class Instructions():
             "Press space to begin.")
 
             instruction4 = ("Here is the target word that you just memorized: \n\n"+
-             ' '.join(self.todays_single.values.flatten()) +
+             ' '.join(target_s) +
             " \n\n When you are presented this word during the the next block of lexical decision trials, we would like you to press "+
             self.responsekeys['pm']+" INSTEAD of "+ self.responsekeys['word'] +
             keyhands + "and use it to make your response if you see your target word.\n\n " +
