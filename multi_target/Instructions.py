@@ -2,13 +2,15 @@ from psychopy import core, event
 
 
 class Instructions():
-    def __init__(self, responsekey_list):
+    def __init__(self, responsekey_list, todays_multi, todays_single):
         self.responsekeys = responsekey_list
         self.OThand = 'LEFT'
         if self.responsekeys["word"] == 'j' or self.responsekeys["word"] == 'k':
             self.OThand = 'RIGHT'
+        self.todays_multi = todays_multi
+        self.todays_single = todays_single
 
-    def block_instructions(self, btype, target_s):
+    def block_instructions(self, btype):
         keyhands = (".\n\nPlease place the middle finger of your LEFT hand on the 's' key and the index finger of your LEFT hand on the 'd' key."+
         " Please make your lexical decision responses from this position.\n\n" + "Please locate the 'j' key now. During the next block of trials," +
         " please rest the index finger of your RIGHT hand here, ")
@@ -23,7 +25,7 @@ class Instructions():
             " We will now present you the target words to memorize.")
 
             instruction2 = ("You have two minutes to memorize the following target words: \n\n"+
-             ' '.join(target_s) +
+             ' '.join(self.todays_multi.values.flatten()) +
             "\n\n Once you have tried to memorize them, we will test you.")
 
             instruction3 = ("We will now test your memory. \n\n" +
@@ -32,7 +34,7 @@ class Instructions():
             "Press space to begin.")
 
             instruction4 = ("Here are the target words that you just memorized: \n\n"+
-             ' '.join(target_s) +
+             ' '.join(self.todays_multi.values.flatten()) +
             " \n\n When you are presented any of these words during the the next block of lexical decision trials, we would like you to press "+
             self.responsekeys['pm']+" INSTEAD of "+ self.responsekeys['word'] +
             keyhands + "and use it to make your response if you see an item from your target list.\n\n " +
@@ -44,7 +46,7 @@ class Instructions():
             " We will now present you the target word to memorize.")
 
             instruction2 = ("You have two minutes to memorize the following target word \n\n"+
-             ' '.join(target_s) +
+             ' '.join(self.todays_single.values.flatten()) +
             "\n\n Once you have tried to memorize it, we will test you.")
 
             instruction3 = ("We will now test your memory. \n\n" +
@@ -53,7 +55,7 @@ class Instructions():
             "Press space to begin.")
 
             instruction4 = ("Here is the target word that you just memorized: \n\n"+
-             ' '.join(target_s) +
+             ' '.join(self.todays_single.values.flatten()) +
             " \n\n When you are presented this word during the the next block of lexical decision trials, we would like you to press "+
             self.responsekeys['pm']+" INSTEAD of "+ self.responsekeys['word'] +
             keyhands + "and use it to make your response if you see your target word.\n\n " +
@@ -74,3 +76,4 @@ class Instructions():
             keyhands +
             "\n\n You will now perform some practice trials. Press space to begin."
             )
+        return instructions    
