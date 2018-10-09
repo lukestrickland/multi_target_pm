@@ -17,8 +17,8 @@ class Canvas():
         self.win.flip(clearBuffer=True)
         return self.experiment.clock.time()
 
-    def text(self, text):
-        stim = visual.TextStim(win=self.win, text=text)
+    def text(self, text, height=None, wrapWidth = None):
+        stim = visual.TextStim(win=self.win, text=text, font="Arial", height=height, wrapWidth=wrapWidth)
         self.stim_list.append(stim)
 
     def rect(self, x, y, w, h):

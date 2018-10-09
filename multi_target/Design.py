@@ -35,7 +35,19 @@ class Design():
         stim_bothshuffled['Nonwords'] = stim_nwshuffled['Nonwords']
         self.shuffledstim = stim_bothshuffled
 
-
+    def practice_stim(self, Wkey, Nkey, pid):
+        pracstim = pd.read_csv("items/practice_stim.csv")
+        pracwords = pracstim.loc[:,"Words"].to_frame()
+        pracwords.rename(columns={'Words':'stim'}, inplace=True)
+        pracwords['S'] = "W"
+        pracwords['C'] = Wkey
+        pracnonwords = pracstim.loc[:,"Nonwords"].to_frame()
+        pracnonwords.rename(columns={'Nonwords':'stim'}, inplace=True)
+        pracnonwords['S'] = "N"
+        pracnonwords['C'] = Nkey
+        pracstim = pracwords.append(pracnonwords)
+        pracstim.to_csv("tmp/p" +str(pid)+ "_practice" + ".csv", index=False)
+        
     def set_stim(self, counterbalance):
         self.initial_shuffle()
         self.single_cond_words= self.shuffledstim.loc[0:1, "Words"]
@@ -99,30 +111,32 @@ class Design():
 
         self.pm_positions = tmp
 
-    def create_blocks(self):    
+    def create_blocks(self, keybalance):    
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
                 word_df= pd.DataFrame(self.words["day_" + str(i) + "_block_" + str(j)])
                 word_df['S']="W"
+                word_df['C']=keybalance["word"]
                 nonword_df= pd.DataFrame(self.nonwords["day_" + str(i) + "_block_" + str(j)])
                 nonword_df['S']="N"
+                nonword_df['C']=keybalance["nonword"]
                 tmp=word_df.append(nonword_df)
-                tmp.columns = ["stim", "S"]
+                tmp.columns = ["stim", "S", "C"]
                 self.data["day_" + str(i) + "_block_" + str(j)] = tmp.sample(frac=1).reset_index(drop=True)
 
-    def insert_pm(self, counterbalance):
+    def insert_pm(self, counterbalance, keybalance):
         newstim = pd.DataFrame()
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
         ###Define ranges to insert PM items into 
                 target_list = self.pmtargets.loc[:,"day_" + str(i) + "_block_" + str(j)].values
-                pm_target ={"stim":self.single_cond_words[0], "S":[ "P"]}
+                pm_target ={"stim":self.single_cond_words[0], "S":[ "P"], "C":keybalance["pm"]}
                 if counterbalance[i-1,j-1]=='multi':
                     pm_target['stim']='multi'
-                pm_target = pd.DataFrame(pm_target)[["stim", "S"]]
+                pm_target = pd.DataFrame(pm_target)[["stim", "S", "C"]]
                 pm_positions = self.pm_positions.loc[:,"day_" + str(i) + "_block_" + str(j)].values
                 thisblock_stim = self.data["day_" + str(i) + "_block_" + str(j)]
-                thisblock_stim.columns=["stim", "S"]
+                thisblock_stim.columns=["stim", "S", "C"]
                 l = 0
                 for position in pm_positions:
                     pm_target.values[0,0] = target_list[l]
@@ -136,8 +150,9 @@ class Design():
             day_dats = pd.DataFrame()
             for j in range(1, self.blocks+1):
                 data = self.data["day_" + str(i) + "_block_" + str(j)].copy()
-                data['R'] = -1
                 data['RT'] = -1
+                data['R'] = -1
+                data['prestim_R'] = -1
                 data['block'] = j
                 data['day'] = i
                 data['cond'] = counterbalance[i-1,j-1]
