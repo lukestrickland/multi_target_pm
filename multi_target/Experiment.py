@@ -25,14 +25,14 @@ class Experiment():
         self.design = design
         self.rm_count = 1
         #read in response key counterbalance from csv
-        keybalance = pd.read_csv("items/keybalance.csv").iloc[:,0] - 1
+        keybalance = pd.read_csv("items/keybalance.csv", header=None).iloc[self.participantid,0] - 1
 
         responsekey_list = ({"word": 'd', "nonword" : 's', "pm" : 'j'},
                             {"word": 's', "nonword" : 'd', "pm" : 'j'},
                             {"word": 'j', "nonword" : 'k', "pm" : 'd'},
                             {"word": 'k', "nonword" : 'j', "pm" : 'd'})
 
-        self.responsekeys = responsekey_list[self.participantid % 4]
+        self.responsekeys = responsekey_list[keybalance]
         self.OThand = 'LEFT'
         if self.responsekeys["word"] == 'j' or self.responsekeys["word"] == 'k':
             self.OThand = 'RIGHT'

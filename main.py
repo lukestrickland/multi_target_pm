@@ -5,11 +5,11 @@ from multi_target.Experiment import Experiment
 
 import pandas as pd
 
-#participantid = int(raw_input("Please enter participant id: "))
-#day = int(raw_input("Please enter session number: "))
+participantid = int(raw_input("Please enter participant id: "))
+day = int(raw_input("Please enter session number: "))
 
-day=1
-participantid=2
+#day=1
+#participantid=2
 
 
 # Initialise a new Display instance
