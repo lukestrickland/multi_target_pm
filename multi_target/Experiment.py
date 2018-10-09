@@ -138,9 +138,10 @@ class Experiment():
         stim = stim.sample(frac=1).reset_index()
         self.print_instructions(self.instructions.practice_instructions(), instruct_delay, 'space', height = 0.075, wrapWidth= 1.65)
         choices, RTs, pre_stim_resps = self.block(stim["stim"], stim["C"])
-        perf = pd.DataFrame({'RT': RTs, 'R':choices, 
-                        'day':self.day, 'cond':'practice', 'stim' : stim.loc[range(0, len(RTs)), "stim"],
-                        'C' : stim.loc[range(0, len(RTs)), "C"], 'prestim_R':pre_stim_resps})
+        perf = pd.DataFrame({'stim' : stim.loc[range(0, len(RTs)), "stim"],
+                            'S' : stim.loc[range(0, len(RTs)), "S"],
+                            'C' : stim.loc[range(0, len(RTs)), "C"],
+                            'RT': RTs, 'R':choices, 'prestim_R':pre_stim_resps, 'day':self.day, 'cond':'practice'})
         perf.to_csv("data/practice_p" +str(self.participantid)+ "_day_" + str(self.day)+ ".csv")
 
     def run_both_blocks(self):
@@ -213,10 +214,13 @@ class Experiment():
             stim = self.recmem_newstim(btype)
             choices, RTs, pre_stim_resps = self.block(stim.iloc[:,0], stim.iloc[:,1])
             #Update recmem saved data
-            perf = pd.DataFrame({'RT': RTs, 'R':choices, 'block':self.blocknum,
-                        'day':self.day, 'cond':btype, 'stim' : stim.loc[range(0, len(RTs)),'Words'],
-                        'C' : stim.loc[range(0, len(RTs)),'corr'], 'count': self.rm_count,
-                        'prestim_R':pre_stim_resps})
+            perf = pd.DataFrame({'stim' : stim.loc[range(0, len(RTs)),'Words'],
+                                 'C' : stim.loc[range(0, len(RTs)),'corr'],
+                                'RT': RTs, 'R':choices, 'prestim_R':pre_stim_resps,
+                                'block':self.blocknum,'day':self.day, 'cond':btype, 
+                                'count': self.rm_count
+                                }
+                            )
             if (self.rm_count==1):
                 perf.to_csv("data/RM_p" +str(self.participantid)+ "_day_" + str(self.day)+ ".csv", index=False)
             elif(self.rm_count>1):

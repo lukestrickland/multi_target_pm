@@ -25,8 +25,8 @@ experiment = Experiment(canvas, Design("items/stimuli.csv", 2,2), day, participa
 #experiment.print_instructions(recmem_instructions2, instruct_delay, 'space', height = 0.085, wrapWidth= 1.65)
 #experiment.run_block('multi')
 experiment.practice_block()
-#experiment.run_both_blocks()
-#experiment.save_data()
+experiment.run_both_blocks()
+experiment.save_data()
 experiment.canvas.close_display
 
 #block_instructions, recmem_instructions, response_instructions = experiment.create_instructions("single")
