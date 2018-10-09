@@ -2,11 +2,20 @@ from psychopy import core, event
 import numpy as np
 import pandas as pd
 
-instruct_delay = 0
-puzzle_time = 5
 
-first_trials=0
-second_trials = 1
+pilot=True
+
+
+instruct_delay = 5
+puzzle_time = 180
+first_trials=317
+second_trials = 635
+
+if pilot:
+    instruct_delay = 0
+    puzzle_time = 5
+    first_trials=0
+    second_trials = 1
 
 class Experiment():
     def __init__(self, canvas, design, day, participantid):
@@ -85,13 +94,16 @@ class Experiment():
             "During the next block of lexical decision trials, we would like you to make an alternative response to certain target words.\n\n" + 
             " We will now present you the target words to memorize.")
 
-            instruction2 = ("Please memorize the following target words \n\n"+
+            instruction2 = ("You have two minutes to memorize the following target words: \n\n"+
              ' '.join(self.todays_multi.values.flatten()) +
-            "\n\n Once you have tried to memorize them, we will test you." +
-            " You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. \n\n"+
+            "\n\n Once you have tried to memorize them, we will test you.")
+
+            instruction3 = ("We will now test your memory. \n\n" +
+             " You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. \n\n"+
+             " We wish to train you to 100% accuracy. Thus, you will continue to be tested until you can perfectly recognise the target words. \n\n"+
             "Press space to begin.")
 
-            instruction3 = ("Here are the target words that you just memorized: \n\n"+
+            instruction4 = ("Here are the target words that you just memorized: \n\n"+
              ' '.join(self.todays_multi.values.flatten()) +
             " \n\n When you are presented any of these words during the the next block of lexical decision trials, we would like you to press "+
             self.responsekeys['pm']+" INSTEAD of "+ self.responsekeys['word'] +
@@ -103,20 +115,23 @@ class Experiment():
             "During the next block of lexical decision trials, we would like you to make an alternative response to a target word.\n\n" + 
             " We will now present you the target word to memorize.")
 
-            instruction2 = ("Please memorize the following target word \n\n"+
+            instruction2 = ("You have two minutes to memorize the following target word \n\n"+
              ' '.join(self.todays_single.values.flatten()) +
-            "\n\n Once you have memorized the word, we will test you." +
-            " You will be presented words one by one. Press the 'y' key if the word is your target word, otherwise press the 'n' key. \n\n"+
+            "\n\n Once you have tried to memorize it, we will test you.")
+
+            instruction3 = ("We will now test your memory. \n\n" +
+             " You will be presented words one by one. Press the 'y' key for your target word, otherwise press the 'n' key. \n\n"+
+             " We wish to train you to 100% accuracy. Thus, you will continue to be tested until you can perfectly recognise the target words \n\n"+
             "Press space to begin.")
 
-            instruction3 = ("Here is the target word that you just memorized: \n\n"+
+            instruction4 = ("Here is the target word that you just memorized: \n\n"+
              ' '.join(self.todays_single.values.flatten()) +
             " \n\n When you are presented this word during the the next block of lexical decision trials, we would like you to press "+
             self.responsekeys['pm']+" INSTEAD of "+ self.responsekeys['word'] +
             keyhands + "and use it to make your response if you see your target word.\n\n " +
             "Please speak with the experimenter about your instructions.")
 
-        return instruction1, instruction2, instruction3
+        return instruction1, instruction2, instruction3, instruction4
  
     def print_instructions(self, instructions, delay, waitkey= None, size=None,
     height=None, wrapWidth = None):
@@ -134,9 +149,10 @@ class Experiment():
                 core.quit()    
 
     def block_leadup(self, btype):
-        block_instructions, recmem_instructions, response_instructions = self.create_instructions(btype)
+        block_instructions, recmem_instructions1,recmem_instructions2, response_instructions = self.create_instructions(btype)
         self.print_instructions(block_instructions, instruct_delay, 'space', height = 0.085, wrapWidth= 1.65)
-        self.print_instructions(recmem_instructions, instruct_delay, 'space', height = 0.085, wrapWidth= 1.65)
+        self.print_instructions(recmem_instructions1, instruct_delay, 'space', height = 0.085, wrapWidth= 1.65)
+        self.print_instructions(recmem_instructions2, instruct_delay, 'space', height = 0.085, wrapWidth= 1.65)
         self.recmem_block(btype)
         self.canvas.clear()
         self.print_instructions(response_instructions, instruct_delay, 'n', height = 0.085, wrapWidth= 1.65)
@@ -173,7 +189,7 @@ class Experiment():
         stim = stim.sample(frac=1).reset_index()
         keyhands = "\n\nPlease place the middle finger of your LEFT hand on the 's' key and the index finger of your LEFT hand on the 'd' key. Please make your lexical decision responses from this position."
         if self.OThand=="RIGHT":
-            keyhands = "Please place the middle finger of your RIGHT hand on the 'k' key and the index finger of your RIGHT hand on the 'j' key. Please make your lexical decision responses from this position."
+            keyhands = "\n\nPlease place the middle finger of your RIGHT hand on the 'k' key and the index finger of your RIGHT hand on the 'j' key. Please make your lexical decision responses from this position."
 
         instructions = ("Welcome to the experiment. You will perform a lexical decision task, in which you must decide whether strings of letters are" +
             " words or non-words.\n\n Each trial begins with a fixation cross which appears on the screen for a short time, followed by a string of lower case letters." +
@@ -198,8 +214,9 @@ class Experiment():
         RTs = []
         choices = []
         pre_stim = []
-        #len(trials)
-        ntrials=1
+        ntrials=len(trials)
+        if pilot:
+            ntrials=1
         for i in range(0,ntrials):           
             choice, RT, pre_stim_resps = self.trial(trials[i], corrs[i])
             RTs.append(RT)
@@ -215,8 +232,23 @@ class Experiment():
         #Shuffle in new rec-mem non-targets each loop from a csv
             full_nontargets = pd.read_csv("tmp/p" +str(self.participantid)+ 
             "recmem_nontargets" + ".csv")
-            nontargets = full_nontargets.copy().iloc[0:8,1].to_frame()
-            next_nontargets = full_nontargets.copy().loc[range(8, len(full_nontargets)), :] 
+
+            #if there's not enough targets, re-generate them from scratch
+            if (len(full_nontargets) <8 and btype=='multi') or (len(full_nontargets) <1 and btype=='single'):   
+                recmem_nontargets = pd.read_csv('items/recmem_nontargets.csv', header=None)
+                recmem_nontargets = recmem_nontargets.sample(frac=1)
+                recmem_nontargets.reset_index(inplace=True, drop=True)
+                recmem_nontargets.to_csv("tmp/p" +str(self.participantid)+ "recmem_nontargets" + ".csv")
+                full_nontargets = full_nontargets.append(pd.read_csv("tmp/p" +str(self.participantid)+ 
+                        "recmem_nontargets" + ".csv"))
+
+            if (btype=='multi'):
+                nontargets = full_nontargets.copy().iloc[0:8,1].to_frame()
+                next_nontargets = full_nontargets.copy().loc[range(8, len(full_nontargets)), :] 
+            else:
+                next_nontargets = full_nontargets.copy().loc[range(1, len(full_nontargets)), :]
+                nontargets = full_nontargets.copy().iloc[0:1,1].to_frame()
+
             next_nontargets.reset_index(inplace=True, drop=True)
             next_nontargets.to_csv("tmp/p" +str(self.participantid)+ 
             "recmem_nontargets" + ".csv", index=False)                    
@@ -261,8 +293,13 @@ class Experiment():
                 self.print_instructions('100% accuracy, great job!', 3, 'space')  
                 break
             else:
-                 self.print_instructions('You were not 100% accurate, please try again.', 3, 'space') 
-     
+                if (btype=='single'):
+                    self.print_instructions('You were not 100% accurate, please study the target word and try again.', 3, 'space') 
+                    self.print_instructions("Here is the target word: \n\n"+' '.join(self.todays_single.values.flatten()) + "\n\n Press space when you are ready for another test.", 3, 'space')
+                else:
+                    self.print_instructions('You were not 100% accurate, please study the target words and try again.', 3, 'space') 
+                    self.print_instructions("Here are the target words: \n\n"+' '.join(self.todays_multi.values.flatten()) + "\n\n Press space when you are ready for another test.", 3, 'space')
+
     def puzzle(self):
         self.print_instructions('Before you complete the lexical decision trials we would like you to complete a sudoku puzzle.\n\n' +
         'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.', 
