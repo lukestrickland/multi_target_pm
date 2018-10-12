@@ -9,7 +9,7 @@ from multi_target.Experiment import Experiment
 #day = int(raw_input("Please enter session number: "))
 
 day=1
-participantid=2
+participantid=1
 
 
 # Initialise a new Display instance

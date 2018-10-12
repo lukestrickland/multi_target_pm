@@ -67,7 +67,7 @@ class Experiment():
                 "tmp/p" + str(self.participantid) + "recmem_nontargets" + ".csv")
         else:
             self.design.read_data(participantid)
-        #read in PM stimuli as need to display them in instructions
+        # read in PM stimuli as need to display them in instructions
         self.todays_multi = self.design.multi_cond_words.to_frame().copy().iloc[
             range((self.day-1)*8, (self.day-1)*8+8), :]
         self.todays_single = self.design.single_cond_words.to_frame().copy().iloc[[
@@ -162,7 +162,8 @@ class Experiment():
         perf = pd.DataFrame({'stim': stim.loc[range(0, len(RTs)), "stim"],
                              'S': stim.loc[range(0, len(RTs)), "S"],
                              'C': stim.loc[range(0, len(RTs)), "C"],
-                             'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps, 'day': self.day, 'cond': 'practice'})
+                             'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps, 
+                             'day': self.day, 'cond': 'practice'})
         perf.to_csv("data/practice_p" + str(self.participantid) +
                     "_day_" + str(self.day) + ".csv")
 
@@ -204,7 +205,8 @@ class Experiment():
                                       "recmem_nontargets" + ".csv")
 
         # if there's not enough targets, re-generate them from scratch
-        if (len(full_nontargets) < 8 and btype == 'multi') or (len(full_nontargets) < 1 and btype == 'single'):
+        if (len(full_nontargets) < 8 and btype == 'multi') or (len(
+            full_nontargets) < 1 and btype == 'single'):
             recmem_nontargets = pd.read_csv(
                 'items/recmem_nontargets.csv', header=None)
             recmem_nontargets = recmem_nontargets.sample(frac=1)
@@ -245,6 +247,7 @@ class Experiment():
     '''runs the recognition memory task until perfect accuracy. In the 
     single target condition, participants are presented one target word
     and one non-target word. 8 of each in the multi target condition'''
+
     def recmem_block(self, btype):
       # run recmem trials til 100% accuracy
         while True:
@@ -269,8 +272,8 @@ class Experiment():
                     "data/RM_p" + str(self.participantid) + "_day_" + str(self.day) + ".csv")
                 new_perf = old_perf.append(perf)
                 new_perf.to_csv("data/RM_p" + str(self.participantid) +
-                                "_day_" + str(self.day) + ".csv", index=False)                             
-            #rm_count keeps track of how many tries they had at the RM task
+                                "_day_" + str(self.day) + ".csv", index=False)
+            # rm_count keeps track of how many tries they had at the RM task
             self.rm_count += 1
             # check if all answers correct
             match = [i == j for i, j in zip(
@@ -283,14 +286,17 @@ class Experiment():
                 if (btype == 'single'):
                     self.print_instructions(
                         'You were not 100% accurate, please study the target word and try again.', 3, 'space')
-                    self.print_instructions("Here is the target word: \n\n"+' '.join(self.todays_single.values.flatten(
-                    )) + "\n\n Press space when you are ready for another test.", 3, 'space')
+                    self.print_instructions("Here is the target word: \n\n"+
+                    ' '.join(self.todays_single.values.flatten()) + 
+                    "\n\n Press space when you are ready for another test.", 3, 'space')
                 else:
                     self.print_instructions(
                         'You were not 100% accurate, please study the target words and try again.', 3, 'space')
-                    self.print_instructions("Here are the target words: \n\n"+' '.join(
-                        self.todays_multi.values.flatten()) + "\n\n Press space when you are ready for another test.", 3, 'space')
-#distractor puzzle before they complete the task
+                    self.print_instructions("Here are the target words: \n\n"+
+                    ' '.join( self.todays_multi.values.flatten()) + 
+                    "\n\n Press space when you are ready for another test.", 3, 'space')
+# distractor puzzle before they complete the task
+
     def puzzle(self):
         self.print_instructions('Before you complete the lexical decision trials we would like you to complete a sudoku puzzle.\n\n' +
                                 'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.',
@@ -298,7 +304,8 @@ class Experiment():
         self.print_instructions(("It is now time to begin the lexical decision trials. \n\n" +
                                  "Please rest your fingers on the response keys." +
                                  " Press space when you are ready to begin."), 1, 'space')
-#saves of the main data at the end of the experiment.
+# saves of the main data at the end of the experiment.
+
     def save_data(self):
         for j in range(1, self.design.blocks+1):
             data = self.perf_data["day_" +

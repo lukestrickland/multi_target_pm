@@ -46,10 +46,10 @@ class Design():
         stim_bothshuffled.reset_index(inplace=True, drop=True)
         stim_bothshuffled['Nonwords'] = stim_nwshuffled['Nonwords']
         self.shuffledstim = stim_bothshuffled
+
     # Will be called by the experiment object where participants are
     # assigned a response key for each resp. Creates a data frame of practice
     # stimuli that have a correct column (C) which contains the correct response
-
     def practice_stim(self, Wkey, Nkey, pid):
         pracstim = pd.read_csv("items/practice_stim.csv")
         pracwords = pracstim.loc[:, "Words"].to_frame()

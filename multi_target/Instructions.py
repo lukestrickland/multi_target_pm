@@ -1,11 +1,12 @@
 from psychopy import core, event
 
-#generates some of the lengthier task instructions.
+# generates some of the lengthier task instructions.
+
 
 class Instructions():
     def __init__(self, responsekey_list, todays_multi, todays_single):
-        #needs the responsekey_list like experiment, and also
-        #the names of the PM targets
+        # needs the responsekey_list like experiment, and also
+        # the names of the PM targets
         self.responsekeys = responsekey_list
         self.OThand = 'LEFT'
         if self.responsekeys["word"] == 'j' or self.responsekeys["word"] == 'k':
