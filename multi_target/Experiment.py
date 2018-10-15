@@ -55,7 +55,7 @@ class Experiment():
             self.design.practice_stim(
                 self.responsekeys["word"], self.responsekeys["nonword"], self.participantid)
             self.design.set_stim(self.counterbalance)
-            self.design.set_pm_positions()
+            self.design.set_pm_positions(5)
             self.design.create_blocks(self.responsekeys)
             self.design.insert_pm(self.counterbalance, self.responsekeys)
             self.design.setup_data(participantid, self.counterbalance)

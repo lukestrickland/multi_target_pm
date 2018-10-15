@@ -13,7 +13,12 @@ experiment = Experiment(canvas, Design(
     "items/stimuli.csv", 2, 2), 1, 1)
 
 class Test_Design(unittest.TestCase):
-  
+
+    def test_pm_positions(self):
+        test =1
+        for i in experiment.design.pm_positions:
+            self.assertEqual(experiment.design.pm_positions[i].tolist(),
+            experiment.design.data[i].index[experiment.design.data[i]['S'] == 'P'].tolist())
 #todo: test whether PM items turn up where expected
     def test_pm_insert(self):
         for i in experiment.design.data:
@@ -24,7 +29,7 @@ class Test_Design(unittest.TestCase):
     def test_sim_design(self):
         response_keys = []
         counterbalance = []
-        for i in range(0,24):
+        for i in range(0,32):
             experiment= Experiment(canvas, Design("items/stimuli.csv", 2, 2), 1, i)
             response_keys.append(experiment.responsekeys)
             counterbalance.append(experiment.counterbalance)

@@ -105,7 +105,7 @@ class Design():
     # there is a break in the middle for participants to rest, so they also
     # don't get pm items for 3 trials after the break (which is why start = 321 when blocklength is 318)
 
-    def set_pm_positions(self):
+    def set_pm_positions(self, minsep):
         tmp = pd.DataFrame()
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
@@ -130,8 +130,8 @@ class Design():
                         last = pm_positions[k-1]
                     # if statement to make sure people dont get two
                     # pms within 5 trials of each other
-                    if (last >= start-5):
-                        start = last + 6
+                    if (last >= start-minsep):
+                        start = last + (minsep+1)
                     position = np.random.random_integers(start, stop)
                     pm_positions.append(position)
 
