@@ -30,7 +30,7 @@ class Instructions():
 
             instruction2 = ("You have two minutes to memorize the following target words: \n\n" +
                             ' '.join(self.todays_multi.values.flatten()) +
-                            "\n\n Once you have tried to memorize them, we will test you.")
+                            "\n\n Once you have tried to memorize the target words, we will test you.")
 
             instruction3 = ("We will now test your memory. \n\n" +
                             " You will be presented words one by one. Press the 'y' key if the word is on this list, otherwise press the 'n' key. \n\n" +
@@ -39,8 +39,8 @@ class Instructions():
 
             instruction4 = ("Here are the target words that you just memorized: \n\n" +
                             ' '.join(self.todays_multi.values.flatten()) +
-                            " \n\n When you are presented any of these words during the the next block of lexical decision trials, we would like you to press " +
-                            self.responsekeys['pm']+" INSTEAD of " + self.responsekeys['word'] +
+                            " \n\n When you are presented any of these words during the the next block of lexical decision trials, we would like you to press '" +
+                            self.responsekeys['pm']+"' INSTEAD of '" + self.responsekeys['word'] + "'"+
                             keyhands + "and use it to make your response if you see an item from your target list.\n\n " +
                             "Please speak with the experimenter about your instructions.")
 
@@ -49,9 +49,9 @@ class Instructions():
                             "During the next block of lexical decision trials, we would like you to make an alternative response to a target word.\n\n" +
                             " We will now present you the target word to memorize.")
 
-            instruction2 = ("You have two minutes to memorize the following target word \n\n" +
+            instruction2 = ("You have two minutes to memorize the following target word: \n\n" +
                             ' '.join(self.todays_single.values.flatten()) +
-                            "\n\n Once you have tried to memorize it, we will test you.")
+                            "\n\n Once you have tried to memorize the target word, we will test you.")
 
             instruction3 = ("We will now test your memory. \n\n" +
                             " You will be presented words one by one. Press the 'y' key for your target word, otherwise press the 'n' key. \n\n" +
@@ -60,8 +60,8 @@ class Instructions():
 
             instruction4 = ("Here is the target word that you just memorized: \n\n" +
                             ' '.join(self.todays_single.values.flatten()) +
-                            " \n\n When you are presented this word during the the next block of lexical decision trials, we would like you to press " +
-                            self.responsekeys['pm']+" INSTEAD of " + self.responsekeys['word'] +
+                            " \n\n When you are presented this word during the the next block of lexical decision trials, we would like you to press '" +
+                            self.responsekeys['pm']+"' INSTEAD of '" + self.responsekeys['word'] + "'"+
                             keyhands + "and use it to make your response if you see your target word.\n\n " +
                             "Please speak with the experimenter about your instructions.")
 
