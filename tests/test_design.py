@@ -1,4 +1,6 @@
 import unittest
+import math
+import pandas as pd
 from psychopy import visual
 from multi_target.Experiment import Experiment
 from multi_target.Instructions import Instructions
@@ -46,7 +48,41 @@ class Test_Design(unittest.TestCase):
         counts = [cb_dict[c] for c in cb_dict]
         self.assertEqual(len(set(counts)), 1)    
 
+class Test_Experiment(unittest.TestCase):
+#todo: test whether PM items turn up where expected
+    def test_RM_newstim(self):
+        initial_len = len(
+            pd.read_csv("tmp/p" + str(experiment.participantid) +
+            "recmem_nontargets" + ".csv")) * len(experiment.todays_multi)
+        all_nontargets=[]
+        for i in range(0,initial_len):
+            if (i==0):
+                newstim = experiment.recmem_newstim('multi')
+            else:
+                newstim = newstim.append(experiment.recmem_newstim('multi'))   
+        self.assertFalse(any(pd.isnull(newstim["Words"])))
 
+    def test_RM_newstim_samenum(self):
+        initial_len = len(
+            pd.read_csv("tmp/p" + str(experiment.participantid) +
+            "recmem_nontargets" + ".csv")) * len(experiment.todays_multi)
+        all_nontargets=[]
+        for i in range(0,initial_len):
+            newstim = experiment.recmem_newstim('multi')
+            nontargets = newstim.loc[newstim['corr']=='n', "Words"].values.flatten().tolist()
+            all_nontargets = all_nontargets + nontargets
+        stim_dict = Counter(str(e) for e in all_nontargets)
+        counts = [stim_dict[c] for c in stim_dict]
+        self.assertEqual(len(set(counts)), 1) 
+
+
+
+ #sim a bunch of runs of recmem_newstim
+ #take the output
+ #only corr == 'n'
+ #take a count of each string used over how long?
+ #use len nontargets as a n indicator of when counter should be even 
+ #how to check random order? 
 
 #test that PM positions seem genuinely random - how to test this? maybe just pop up a graph            
 #test counterbalance: 

@@ -203,7 +203,7 @@ class Experiment():
         # Shuffle in new rec-mem non-targets each loop from a csv
         full_nontargets = pd.read_csv("tmp/p" + str(self.participantid) +
                                       "recmem_nontargets" + ".csv")
-
+        full_nontargets.dropna(how="all", inplace=True) 
         # if there's not enough targets, re-generate them from scratch
         if (len(full_nontargets) < 8 and btype == 'multi') or (len(
             full_nontargets) < 1 and btype == 'single'):
@@ -215,6 +215,7 @@ class Experiment():
                 "tmp/p" + str(self.participantid) + "recmem_nontargets" + ".csv")
             full_nontargets = full_nontargets.append(pd.read_csv("tmp/p" + str(self.participantid) +
                                                                  "recmem_nontargets" + ".csv"))
+            full_nontargets.reset_index(inplace=True, drop=True)
 
         if (btype == 'multi'):
             nontargets = full_nontargets.copy().iloc[0:8, 1].to_frame()
