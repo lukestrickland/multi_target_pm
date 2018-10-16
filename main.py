@@ -19,10 +19,12 @@ canvas = Canvas(disp)
 
 experiment = Experiment(canvas, Design(
     "items/stimuli.csv", 2, 2), day, participantid)
-experiment.practice_block()
-experiment.run_both_blocks()
-experiment.save_data()
-experiment.canvas.close_display
+
+experiment.design.set_pm_positions(5)
+#experiment.practice_block()
+#experiment.run_both_blocks()
+#experiment.save_data()
+#experiment.canvas.close_display
 
 ##random junk syntax I've been using to test
 # print(test)

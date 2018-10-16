@@ -116,7 +116,7 @@ class Design():
 
                 stops = np.concatenate(
                     [np.linspace(start=15, stop=314, num=24),
-                     np.linspace(start=334, stop=633, num=24)])
+                     np.linspace(start=333, stop=632, num=24)])
         #################
 
                 pm_positions = []
@@ -125,7 +125,7 @@ class Design():
                     stop = stops[k]
 
                     if(k == 0):
-                        last = 0
+                        last = -minsep
                     else:
                         last = pm_positions[k-1]
                     # if statement to make sure people dont get two
