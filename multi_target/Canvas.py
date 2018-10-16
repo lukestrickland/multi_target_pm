@@ -11,9 +11,6 @@ class Canvas():
         self.stim_list = []
         self.clear()
 
-    def copy(self, canvas):
-        self.stim_list = canvas.stim_list + []
-
     def text(self, text, height=None, wrapWidth=None):
         stim = visual.TextStim(win=self.win, text=text,
                                font="Arial", height=height, wrapWidth=wrapWidth)
