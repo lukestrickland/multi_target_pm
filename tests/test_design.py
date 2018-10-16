@@ -1,6 +1,7 @@
 import unittest
 import math
 import pandas as pd
+import itertools
 from psychopy import visual
 from multi_target.Experiment import Experiment
 from multi_target.Instructions import Instructions
@@ -46,11 +47,44 @@ class Test_Design(unittest.TestCase):
         cb = zip(response_keys, counterbalance)   
         cb_dict = Counter(str(e) for e in cb)
         counts = [cb_dict[c] for c in cb_dict]
-        self.assertEqual(len(set(counts)), 1)    
+        self.assertEqual(len(set(counts)), 1)  
+
+    def test_data_days_consistent(self):
+        #read in experiment one data
+        matches = []
+        for i in range(0, 32):
+            experiment1 = Experiment(canvas, Design(
+        "items/stimuli.csv", 2, 2), 1, i)
+            data_1 = experiment1.design.data.copy()
+            del experiment1
+            experiment2 = Experiment(canvas, Design(
+        "items/stimuli.csv", 2, 2), 2, i)
+            data_2 = experiment2.design.data
+            match = [pd.DataFrame.equals(data_1[dat1], data_2[dat2]) for 
+            dat1, dat2 in zip(data_1, data_2)]
+            matches = matches + match
+        self.assertTrue(all(matches))
+
+    def test_data_blocks_not_duplicate(self):
+    #read in experiment one data
+        matches = []
+        for i in range(0, 32):
+            experiment1 = Experiment(canvas, Design(
+        "items/stimuli.csv", 2, 2), 1, i)
+            data_1 = experiment1.design.data.copy()
+            match = [pd.DataFrame.equals(data_1[dat1], data_1[dat2]) for 
+            dat1, dat2 in itertools.combinations(data_1, 2)]
+            matches = matches + match
+        self.assertFalse(any(matches))
+        #Check stimuli - no repeating ongoing task stimuli
+#repeating PM stimuli, correct number of times?
+  
 
 class Test_Experiment(unittest.TestCase):
 #todo: test whether PM items turn up where expected
     def test_RM_newstim(self):
+        experiment = Experiment(canvas, Design(
+    "items/stimuli.csv", 2, 2), 1, 2)
         initial_len = len(
             pd.read_csv("tmp/p" + str(experiment.participantid) +
             "recmem_nontargets" + ".csv")) * len(experiment.todays_multi)
@@ -63,6 +97,8 @@ class Test_Experiment(unittest.TestCase):
         self.assertFalse(any(pd.isnull(newstim["Words"])))
 
     def test_RM_newstim_samenum(self):
+        experiment = Experiment(canvas, Design(
+    "items/stimuli.csv", 2, 2), 1, 2)
         initial_len = len(
             pd.read_csv("tmp/p" + str(experiment.participantid) +
             "recmem_nontargets" + ".csv")) * len(experiment.todays_multi)
@@ -76,21 +112,7 @@ class Test_Experiment(unittest.TestCase):
         self.assertEqual(len(set(counts)), 1) 
 
 
-
- #sim a bunch of runs of recmem_newstim
- #take the output
- #only corr == 'n'
- #take a count of each string used over how long?
- #use len nontargets as a n indicator of when counter should be even 
- #how to check random order? 
-
-#test that PM positions seem genuinely random - how to test this? maybe just pop up a graph            
-#test counterbalance: 
-
-
 #check block run order
 
-#Check stimuli - no repeating ongoing task stimuli
-#repeating PM stimuli, correct number of times?
 
 

@@ -8,7 +8,7 @@ from multi_target.Experiment import Experiment
 ##participantid = int(raw_input("Please enter participant id: "))
 #day = int(raw_input("Please enter session number: "))
 
-day=2
+day=1
 participantid=2
 
 
@@ -17,12 +17,12 @@ disp = visual.Window(color=(-1, -1, -1), fullscr=False)
 canvas = Canvas(disp)
 experiment = Experiment(canvas, Design(
     "items/stimuli.csv", 2, 2), day, participantid)
-experiment.recmem_newstim('multi')
 
-#experiment.practice_block()
-#experiment.run_both_blocks()
-#experiment.save_data()
-#experiment.canvas.close_display
+
+experiment.practice_block()
+experiment.run_both_blocks()
+experiment.save_data()
+experiment.canvas.close_display
 
 ##random junk syntax I've been using to test
 # print(test)
