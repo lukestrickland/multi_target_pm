@@ -14,13 +14,6 @@ class Canvas():
     def copy(self, canvas):
         self.stim_list = canvas.stim_list + []
 
-    def show(self):
-
-        for stim in self.stim_list:
-            stim.draw()
-        self.win.flip(clearBuffer=True)
-        return self.experiment.clock.time()
-
     def text(self, text, height=None, wrapWidth=None):
         stim = visual.TextStim(win=self.win, text=text,
                                font="Arial", height=height, wrapWidth=wrapWidth)

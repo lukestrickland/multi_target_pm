@@ -9,7 +9,6 @@ from multi_target.Design import Design
 from multi_target.Canvas import Canvas
 from collections import Counter
 import matplotlib.pyplot as plt
-from copy import deepcopy
 
 disp = visual.Window(color=(-1, -1, -1), fullscr=False)
 canvas = Canvas(disp)
