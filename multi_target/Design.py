@@ -217,4 +217,4 @@ class Design():
                 blockdat = data[data['block'] == j]
                 blockdat = blockdat.reset_index(drop=True)
                 self.data["day_" + str(i) + "_block_" +
-                          str(j)] = blockdat[["stim", "S"]]
+                          str(j)] = blockdat[["stim", "S", "C"]]
