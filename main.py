@@ -18,7 +18,7 @@ canvas = Canvas(disp)
 experiment = Experiment(canvas, Design(
     "items/stimuli.csv", 2, 2), day, participantid)
 
-
+experiment.recmem_newstim('single')
 experiment.practice_block()
 experiment.run_both_blocks()
 experiment.save_data()

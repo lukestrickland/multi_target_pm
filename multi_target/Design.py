@@ -90,7 +90,7 @@ class Design():
                 if counterbalance[i-1, j-1] == "single":
                     pmtargets = [self.single_cond_words.values[i-1]] * 48
                 else:
-                    # or 6 * the 8 multi word targets
+                    # or 6 * the 8 multi word targets 
                     pmtargets = []
                     for numreps in range(0,6):
                         pmtargets = pmtargets + random.sample(
@@ -159,7 +159,6 @@ class Design():
                           ] = tmp.sample(frac=1).reset_index(drop=True)
     #insert PM items into data
     def insert_pm(self, counterbalance, keybalance):
-        newstim = pd.DataFrame()
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
                 # Define ranges to insert PM items into

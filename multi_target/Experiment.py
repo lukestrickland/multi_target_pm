@@ -217,14 +217,9 @@ class Experiment():
                                                                  "recmem_nontargets" + ".csv"))
             full_nontargets.reset_index(inplace=True, drop=True)
 
-        if (btype == 'multi'):
-            nontargets = full_nontargets.copy().iloc[0:8, 1].to_frame()
-            next_nontargets = full_nontargets.copy(
-            ).loc[range(8, len(full_nontargets)), :]
-        else:
-            next_nontargets = full_nontargets.copy(
-            ).loc[range(1, len(full_nontargets)), :]
-            nontargets = full_nontargets.copy().iloc[0:1, 1].to_frame()
+        nontargets = full_nontargets.copy().iloc[0:8, 1].to_frame()
+        next_nontargets = full_nontargets.copy(
+        ).loc[range(8, len(full_nontargets)), :]
 
         next_nontargets.reset_index(inplace=True, drop=True)
         next_nontargets.to_csv("tmp/p" + str(self.participantid) +
@@ -232,15 +227,13 @@ class Experiment():
         if (btype == 'multi'):
             targets = self.todays_multi.copy()
         else:
-            targets = self.todays_single.copy()
+            targets = pd.concat([self.todays_single.copy()]*8, ignore_index=True)
 
         nontargets['corr'] = "n"
         nontargets = nontargets.rename(columns={'0': 'Words'})
         targets['corr'] = "y"
-        if (btype == 'multi'):
-            stim = pd.concat([nontargets, targets])
-        else:
-            stim = pd.concat([nontargets.iloc[[0], :], targets])
+       
+        stim = pd.concat([nontargets, targets])
         stim = stim.sample(frac=1)
         stim.reset_index(inplace=True, drop=True)
         return(stim)
