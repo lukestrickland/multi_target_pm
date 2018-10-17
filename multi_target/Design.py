@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import csv
+import random
 
 # cheeky function to insert row into pandas data frame
 
@@ -90,9 +91,10 @@ class Design():
                     pmtargets = [self.single_cond_words.values[i-1]] * 48
                 else:
                     # or 6 * the 8 multi word targets
-                    pmtargets = np.ndarray.tolist(
-                        self.multi_cond_words.values[(i-1)*8:(i*8)]) * 6
-                np.random.shuffle(pmtargets)
+                    pmtargets = []
+                    for numreps in range(0,6):
+                        pmtargets = pmtargets + random.sample(
+                        self.multi_cond_words.values[(i-1)*8:(i*8)].tolist(), 8)
                 pmtargets = np.array(pmtargets)
                 # save all for each day and block
                 self.pmtargets["day_" +

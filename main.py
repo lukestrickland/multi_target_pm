@@ -5,11 +5,11 @@ from multi_target.Canvas import Canvas
 from multi_target.Design import Design
 from multi_target.Experiment import Experiment
 
-##participantid = int(raw_input("Please enter participant id: "))
+#participantid = int(raw_input("Please enter participant id: "))
 #day = int(raw_input("Please enter session number: "))
 
 day=1
-participantid=2
+participantid=1
 
 
 # Initialise a new Display instance, experiment, design

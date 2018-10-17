@@ -60,5 +60,4 @@ class Canvas():
         self.rect(x, y, self.win.size[0], self.win.size[1])
 
     def close_display(self):
-        # prevent confusion
         self.win.close()
