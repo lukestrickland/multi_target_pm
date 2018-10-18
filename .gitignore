@@ -3,3 +3,5 @@ tmp/*
 *.pdf
 *.pyc
 recmem_nontargets.csv
+*/Words.txt
+*/Nonwords.txt

@@ -72,6 +72,8 @@ class Experiment():
             range((self.day-1)*8, (self.day-1)*8+8), :]
         self.todays_single = self.design.single_cond_words.to_frame().copy().iloc[[
             self.day-1]]
+        self.todays_single = self.todays_single.rename(columns={1: 'Words'})
+        self.todays_multi = self.todays_multi.rename(columns={1: 'Words'})
         self.instructions = Instructions(
             self.responsekeys, self.todays_multi, self.todays_single)
 
@@ -203,7 +205,7 @@ class Experiment():
         # Shuffle in new rec-mem non-targets each loop from a csv
         full_nontargets = pd.read_csv("tmp/p" + str(self.participantid) +
                                       "recmem_nontargets" + ".csv")
-        full_nontargets.dropna(how="all", inplace=True) 
+        full_nontargets.dropna(how="all", inplace=True)
         # if there's not enough targets, re-generate them from scratch
         if (len(full_nontargets) < 8 and btype == 'multi') or (len(
             full_nontargets) < 1 and btype == 'single'):

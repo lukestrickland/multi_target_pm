@@ -10,11 +10,12 @@ from multi_target.Canvas import Canvas
 from collections import Counter
 import matplotlib.pyplot as plt
 
+'''
 disp = visual.Window(color=(-1, -1, -1), fullscr=False)
 canvas = Canvas(disp)
 
 experiment = Experiment(canvas, Design(
-    "items/stimuli.csv", 2, 2), 1, 2)
+    "items/stimuli.csv", 2, 2), 1, 2)'''
 
 test_design = Design(
     "items/stimuli.csv", 2, 2)
@@ -26,7 +27,7 @@ class Test_Design(unittest.TestCase):
     def test_pm_positions(self):
         old = []
         for i in range(1, 100):
-            test_design.set_pm_positions(5)
+            test_design.set_pm_positions(0)
             all_positions = [test_design.pm_positions.iloc[:,
                                                            j].values.flatten() for j in range(0, 4)]
             all_flattened = [

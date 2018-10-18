@@ -4,12 +4,15 @@ from psychopy import visual
 from multi_target.Canvas import Canvas
 from multi_target.Design import Design
 from multi_target.Experiment import Experiment
+from multi_target.launch_experiment import launch
 
 #participantid = int(raw_input("Please enter participant id: "))
 #day = int(raw_input("Please enter session number: "))
 
-day=1
-participantid=1
+#day=1
+#participantid=1
+
+participantid, day = launch()
 
 
 # Initialise a new Display instance, experiment, design
@@ -18,7 +21,7 @@ canvas = Canvas(disp)
 experiment = Experiment(canvas, Design(
     "items/stimuli.csv", 2, 2), day, participantid)
 
-experiment.recmem_newstim('single')
+#experiment.recmem_newstim('single')
 experiment.practice_block()
 experiment.run_both_blocks()
 experiment.save_data()
