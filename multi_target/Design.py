@@ -20,7 +20,7 @@ def insert_row(idx, df, df_insert):
 class Design():
     def __init__(self, stim_file, blocks, days):
         # Read in source stimuli
-        self.stim = pd.read_csv(stim_file)[0:1352]
+        self.stim = pd.read_csv(stim_file)[0:1306]
         # Create pandas dataframes so later words, non-words, PM can be inserted in
         # by index
         self.words = pd.DataFrame()
@@ -72,7 +72,7 @@ class Design():
         self.single_cond_words = self.shuffledstim.loc[0:1, "Words"]
         self.multi_cond_words = self.shuffledstim.loc[2:17, "Words"]
         # pull out nonPM items
-        ongoing_task_items = self.shuffledstim.loc[18:1278]
+        ongoing_task_items = self.shuffledstim.loc[18:1306]
         ongoing_task_items = ongoing_task_items.reset_index()
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
@@ -81,18 +81,18 @@ class Design():
                 # block 1 on day 2 would have a blocknum of 3
                 block_num = (i-1) * self.blocks + j
                 # grab the next 273 words
-                words = ongoing_task_items.loc[block_num*273 -
-                                               273:block_num*273 - 1, "Words"].values
+                words = ongoing_task_items.loc[block_num*258 -
+                                               258:block_num*258 - 1, "Words"].values
                 # grab the next 315 nonwords
-                nonwords = ongoing_task_items.loc[block_num*315 -
-                                                  315:block_num*315 - 1, "Nonwords"].values
+                nonwords = ongoing_task_items.loc[block_num*322 -
+                                                  322:block_num*322 - 1, "Nonwords"].values
                 # either grab 48 single word targets
                 if counterbalance[i-1, j-1] == "single":
-                    pmtargets = [self.single_cond_words.values[i-1]] * 48
+                    pmtargets = [self.single_cond_words.values[i-1]] * 64
                 else:
                     # or 6 * the 8 multi word targets 
                     pmtargets = []
-                    for numreps in range(0,6):
+                    for numreps in range(0,8):
                         pmtargets = pmtargets + random.sample(
                         self.multi_cond_words.values[(i-1)*8:(i*8)].tolist(), 8)
                 pmtargets = np.array(pmtargets)
@@ -113,12 +113,12 @@ class Design():
             for j in range(1, self.blocks+1):
                 # Define ranges to insert PM items into
                 starts = np.concatenate(
-                    [np.linspace(start=3, stop=302, num=24),
-                     np.linspace(start=321, stop=620, num=24)])
+                    [np.linspace(start=2, stop=312, num=32),
+                     np.linspace(start=324, stop=634, num=32)])
 
                 stops = np.concatenate(
-                    [np.linspace(start=15, stop=314, num=24),
-                     np.linspace(start=333, stop=632, num=24)])
+                    [np.linspace(start=11, stop=321, num=32),
+                     np.linspace(start=333, stop=643, num=32)])
         #################
 
                 pm_positions = []
