@@ -42,8 +42,8 @@ class Canvas():
 
     def fixcross(self):
         self.clear()
-        self.line(start=[-15, 0], end=[15, 0], lineWidth=5)
-        self.line(start=[0, -15], end=[0, 15], lineWidth=5)
+        self.line(start=[-25, 0], end=[25, 0], lineWidth=8)
+        self.line(start=[0, -25], end=[0, 25], lineWidth=8)
         self.show()
 
     def show(self):

@@ -5,13 +5,13 @@ import pandas as pd
 
 # quick way to switch between pilot and
 # actual experiment
-pilot = True
+pilot = False
 
 
 instruct_delay = 5
 puzzle_time = 180
-first_trials = 317
-second_trials = 635
+first_trials = 321
+second_trials = 643
 
 if pilot:
     instruct_delay = 0
