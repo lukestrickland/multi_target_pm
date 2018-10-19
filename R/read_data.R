@@ -3,31 +3,35 @@ library(dplyr)
 data_files <- list.files("data")
 main_block_files <-  data_files[!grepl("practice|RM", data_files)]
 
-for (i in 1:length(main_block_files)) {
-  single_df <-
-    read.csv(paste("data/", main_block_files[i], sep = ""), stringsAsFactors =
-               FALSE)
-  if (i == 1) {
-    full_data <- single_df
-  } else {
-    full_data <- rbind(full_data, single_df[colnames(full_data)])
+stack_csvs <- function(files) {
+  for (i in 1:length(files)) {
+    single_df <-
+      read.csv(paste("data/", files[i], sep = ""), stringsAsFactors =
+                 FALSE)
+    if (i == 1) {
+      full_data <- single_df
+    } else {
+      full_data <- rbind(full_data, single_df[colnames(full_data)])
+    }
   }
+  full_data
 }
 
+okdats <- stack_csvs(main_block_files)
 #Remove untested data
-full_data <- full_data[full_data$RT!=-1,]
+okdats <- okdats[okdats$RT!=-1,]
 
 #clean up df
-full_data$S <- factor(full_data$S)
-full_data$cond <- factor(full_data$cond)
-full_data$acc <- full_data$C==full_data$R
-hist(full_data$RT[full_data$RT < 3], breaks = 100, xlim = c(0, 3))
+okdats$S <- factor(okdats$S)
+okdats$cond <- factor(okdats$cond)
+okdats$acc <- okdats$C==okdats$R
+hist(okdats$RT[okdats$RT < 3], breaks = 100, xlim = c(0, 3))
 
-full_data %>%
+okdats %>%
   group_by(S,cond) %>%
   summarise(mean_acc= mean(acc))
 
-full_data %>%
+okdats %>%
   group_by(S,cond) %>%
   summarise(mean_RT= mean(RT))
 

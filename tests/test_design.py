@@ -10,12 +10,12 @@ from multi_target.Canvas import Canvas
 from collections import Counter
 import matplotlib.pyplot as plt
 
-'''
+
 disp = visual.Window(color=(-1, -1, -1), fullscr=False)
 canvas = Canvas(disp)
 
 experiment = Experiment(canvas, Design(
-    "items/stimuli.csv", 2, 2), 1, 2)'''
+    "items/stimuli.csv", 2, 2), 1, 2)
 
 test_design = Design(
     "items/stimuli.csv", 2, 2)
