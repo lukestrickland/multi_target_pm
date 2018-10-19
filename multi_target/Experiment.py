@@ -14,17 +14,17 @@ puzzle_time = 180
 first_trials = 321
 second_trials = 643
 break_delay = 60
-break_between_blocks=120
+break_time=120
 
 
 if pilot:
-    memorize_delay=10
+    memorize_delay=5
     instruct_delay = 0
     puzzle_time = 5
     first_trials = 0
     second_trials = 1
     break_delay=5
-    break_between_blocks=5
+    break_time=1
 
 '''Experiment object which is meant to do
 things like run the trials, blocks, etc.'''
@@ -124,6 +124,7 @@ class Experiment():
     def block_leadup(self, btype):
         block_instructions, recmem_instructions1, recmem_instructions2, response_instructions = self.instructions.block_instructions(
             btype)
+
         self.print_instructions(
             block_instructions, instruct_delay, 'space', height=0.085, wrapWidth=1.65)
         self.print_instructions(
@@ -144,7 +145,7 @@ class Experiment():
                 self.blocknum)].loc[0:first_trials:, 'C'])
         self.print_instructions("Please take a break for one minute.", break_delay)
         self.print_instructions(
-            "Press space to begin the task again.", 0, waitkey="space")
+            "Press space to begin the task again.", 0, waitkey='space')
  # Mid block break
         choices2, RTs2, pre_stim_resps2 = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)].loc[(first_trials+1):second_trials, 'stim'].tolist(),
@@ -160,16 +161,22 @@ class Experiment():
                 self.blocknum)],
             perf], axis=1, sort=False)
         #if self.blocknum = 1 2 minute break
+        #Here add a function for rm test
+        self.recmem_test(btype)
         if (btype=='multi'):
             self.print_instructions(
-            "Thank you. You no longer need to remember your target words. In fact, you will not be presented those words again in this experiment. Press space to continue.", 0, waitkey="space")
+            ("Thank you. You no longer need to remember your target words."
+            " In fact, you will not be presented those words again in this"
+            " experiment. Press space to continue."), 0, waitkey="space")
         else:
             self.print_instructions(
-            "Thank you. You no longer need to remember your target word. In fact, you will not be presented that word again in this experiment. Press space to continue.", 0, waitkey="space")
+            ("Thank you. You no longer need to remember your target word."
+            " In fact, you will not be presented that word again in this"
+            " experiment. Press space to continue."), 0, waitkey="space")
 
         if self.blocknum==1:
             self.print_instructions(
-            "Please have a break for two minutes.", 120)
+            "Please have a break for two minutes.", break_time)
             
         self.blocknum += 1
     # loads up practice stimuli, runs practice block
@@ -295,29 +302,66 @@ class Experiment():
                 choices, stim['corr'].values.tolist())]
             if all(match):
                 self.print_instructions(
-                    '100% accuracy, great job!', 3, 'space')
+                    ('100% accuracy, great job!'
+                    'Press space to continue'),
+                     3, 'space')
                 break
             else:
                 if (btype == 'single'):
                     self.print_instructions(
-                        'You were not 100% accurate, please study the target word and try again. Press space when ready.', 3, 'space')
+                        ('You were not 100% accurate, please study the target word' 
+                        ' and try again. Press space when ready.'), 3, 'space')
                     self.print_instructions("Here is the target word: \n\n"+
                     ' '.join(self.todays_single.values.flatten()) + 
                     "\n\n Press space when you are ready for another test.", 3, 'space')
                 else:
                     self.print_instructions(
-                        'You were not 100% accurate, please study the target words and try again. Press space when ready.', 3, 'space')
+                        ('You were not 100% accurate, please study the target words'
+                        ' and try again. Press space when ready.'), 3, 'space')
                     self.print_instructions("Here are the target words: \n\n"+
                     ' '.join( self.todays_multi.values.flatten()) + 
                     "\n\n Press space when you are ready for another test.", 3, 'space')
+
+    def recmem_test(self, btype):
+        if (btype=='multi') :
+            RM1 = "words."
+            RM2 = "from your target list"
+        else:
+            RM1= "word."
+            RM2 = "your target word"
+        self.print_instructions(
+                ("Great work completing the block!" 
+                " We now wish to test your memory for your target " +
+                 RM1 +
+                " You will be presented words one by one. Press the 'y' key if the "
+                "word is " +
+                RM2 +
+                ", otherwise press the 'n' key. \n\n" 
+                "Press space to begin."), 3, 'space')
+
+        stim = self.recmem_newstim(btype)
+        choices, RTs, pre_stim_resps = self.block(
+            stim.iloc[:, 0], stim.iloc[:, 1])
+        # Update recmem saved data
+        perf = pd.DataFrame({'stim': stim.loc[range(0, len(RTs)), 'Words'],
+                                'C': stim.loc[range(0, len(RTs)), 'corr'],
+                                'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps,
+                                'block': self.blocknum, 'day': self.day, 'cond': btype,
+                                'count': self.rm_count
+                                }
+                            )
+        perf.to_csv("data/test_RM_p" + str(self.participantid) +
+                    "_day_" + str(self.day)+ str(btype) + ".csv", index=False)        
+
 # distractor puzzle before they complete the task
 
     def puzzle(self):
-        self.print_instructions('Before you complete the lexical decision trials we would like you to complete a sudoku puzzle.\n\n' +
-                                'Please find the puzzle on your desk. You have three minutes. Do not worry if there is not time to finish the puzzle.',
+        self.print_instructions(('Before you complete the lexical decision trials we would like you'
+                                 ' to complete a sudoku puzzle.\n\n Please find the puzzle on your desk. '
+                                'You have three minutes. Do not worry if there is not time to finish the puzzle.'),
                                 puzzle_time)
-        self.print_instructions(("It is now time to begin the lexical decision trials. \n\n" +
-                                 "Please rest your fingers on the response keys." +
+        self.print_instructions(("It is now time to begin the lexical decision trials. \n\n" 
+                                 "Please rest your fingers on the response keys." 
                                  " Press space when you are ready to begin."), 1, 'space')
 # saves of the main data at the end of the experiment.
 
