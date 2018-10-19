@@ -3,3 +3,9 @@ tmp/*
 *.pdf
 *.pyc
 recmem_nontargets.csv
+*/Words.txt
+*/Nonwords.txt
+.Rproj.user
+*.Rproj
+*.RData
+*.Rhistory

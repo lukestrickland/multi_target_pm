@@ -1,0 +1,6 @@
+Experiment 2: 
+
+Words and Non-words
+Randomly shuffle
+Take PM targets - 18
+Take rec mem non-targets: all the rest
