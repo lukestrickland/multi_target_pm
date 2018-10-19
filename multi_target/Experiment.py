@@ -5,19 +5,26 @@ import pandas as pd
 
 # quick way to switch between pilot and
 # actual experiment
-pilot = False
+pilot = True
 
 
 instruct_delay = 5
+memorize_delay = 120
 puzzle_time = 180
 first_trials = 321
 second_trials = 643
+break_delay = 60
+break_between_blocks=120
+
 
 if pilot:
+    memorize_delay=10
     instruct_delay = 0
     puzzle_time = 5
     first_trials = 0
     second_trials = 1
+    break_delay=5
+    break_between_blocks=5
 
 '''Experiment object which is meant to do
 things like run the trials, blocks, etc.'''
@@ -88,7 +95,7 @@ class Experiment():
         t0 = self.canvas.show()
         resp = event.waitKeys(timeStamped=True)
         # Not statement to deal with correct ldt responses on PM trials
-        if resp[0][0] != corr and not (corr == 'p' and resp[0][0] == 'w'):
+        if resp[0][0] != corr and not (corr == self.responsekeys["pm"] and resp[0][0] == self.responsekeys["word"]):
             self.canvas.clear()
             self.canvas.text("INCORRECT")
             self.canvas.show()
@@ -120,7 +127,7 @@ class Experiment():
         self.print_instructions(
             block_instructions, instruct_delay, 'space', height=0.085, wrapWidth=1.65)
         self.print_instructions(
-            recmem_instructions1, instruct_delay, 'space', height=0.085, wrapWidth=1.65)
+            recmem_instructions1, memorize_delay, height=0.085, wrapWidth=1.65)
         self.print_instructions(
             recmem_instructions2, instruct_delay, 'space', height=0.085, wrapWidth=1.65)
         self.recmem_block(btype)
@@ -135,7 +142,7 @@ class Experiment():
             self.blocknum)].loc[0:first_trials, 'stim'],
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)].loc[0:first_trials:, 'C'])
-        self.print_instructions("Please take a break for one minute.", 5)
+        self.print_instructions("Please take a break for one minute.", break_delay)
         self.print_instructions(
             "Press space to begin the task again.", 0, waitkey="space")
  # Mid block break
@@ -152,6 +159,18 @@ class Experiment():
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)],
             perf], axis=1, sort=False)
+        #if self.blocknum = 1 2 minute break
+        if (btype=='multi'):
+            self.print_instructions(
+            "Thank you. You no longer need to remember your target words. In fact, you will not be presented those words again in this experiment. Press space to continue.", 0, waitkey="space")
+        else:
+            self.print_instructions(
+            "Thank you. You no longer need to remember your target word. In fact, you will not be presented that word again in this experiment. Press space to continue.", 0, waitkey="space")
+
+        if self.blocknum==1:
+            self.print_instructions(
+            "Please have a break for two minutes.", 120)
+            
         self.blocknum += 1
     # loads up practice stimuli, runs practice block
 
@@ -281,13 +300,13 @@ class Experiment():
             else:
                 if (btype == 'single'):
                     self.print_instructions(
-                        'You were not 100% accurate, please study the target word and try again.', 3, 'space')
+                        'You were not 100% accurate, please study the target word and try again. Press space when ready.', 3, 'space')
                     self.print_instructions("Here is the target word: \n\n"+
                     ' '.join(self.todays_single.values.flatten()) + 
                     "\n\n Press space when you are ready for another test.", 3, 'space')
                 else:
                     self.print_instructions(
-                        'You were not 100% accurate, please study the target words and try again.', 3, 'space')
+                        'You were not 100% accurate, please study the target words and try again. Press space when ready.', 3, 'space')
                     self.print_instructions("Here are the target words: \n\n"+
                     ' '.join( self.todays_multi.values.flatten()) + 
                     "\n\n Press space when you are ready for another test.", 3, 'space')

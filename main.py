@@ -25,6 +25,7 @@ experiment = Experiment(canvas, Design(
 experiment.practice_block()
 experiment.run_both_blocks()
 experiment.save_data()
+experiment.print_instructions("Thank you for completing the experiment. Please tell the experimenter you are finished.", waitkey='space')
 experiment.canvas.close_display
 
 ##random junk syntax I've been using to test

@@ -16,7 +16,10 @@ for (i in 1:length(main_block_files)) {
 
 #Remove untested data
 full_data <- full_data[full_data$RT!=-1,]
+
+#clean up df
 full_data$S <- factor(full_data$S)
+full_data$cond <- factor(full_data$cond)
 full_data$acc <- full_data$C==full_data$R
 hist(full_data$RT[full_data$RT < 3], breaks = 100, xlim = c(0, 3))
 

@@ -26,7 +26,7 @@ class Instructions():
         if(btype == 'multi'):
             instruction1 = ("We have an interest in your ability to remember to perform actions in the future. \n\n" +
                             "During the next block of lexical decision trials, we would like you to make an alternative response to certain target words.\n\n" +
-                            " We will now present you the target words to memorize.")
+                            " We will now present you the target words to memorize. Press space to begin.")
 
             instruction2 = ("You have two minutes to memorize the following target words: \n\n" +
                             ' '.join(self.todays_multi.values.flatten()) +
@@ -47,7 +47,7 @@ class Instructions():
         elif(btype == 'single'):
             instruction1 = ("We have an interest in your ability to remember to perform actions in the future. \n\n" +
                             "During the next block of lexical decision trials, we would like you to make an alternative response to a target word.\n\n" +
-                            " We will now present you the target word to memorize.")
+                            " We will now present you the target word to memorize. Press space to begin.")
 
             instruction2 = ("You have two minutes to memorize the following target word: \n\n" +
                             ' '.join(self.todays_single.values.flatten()) +

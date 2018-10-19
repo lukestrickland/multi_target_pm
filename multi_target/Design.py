@@ -191,12 +191,13 @@ class Design():
             day_dats = pd.DataFrame()
             for j in range(1, self.blocks+1):
                 data = self.data["day_" + str(i) + "_block_" + str(j)].copy()
-                data['RT'] = -1
                 data['R'] = -1
-                data['prestim_R'] = -1
+                data['RT'] = -1
                 data['block'] = j
+                data['cond'] = counterbalance[i-1, j-1]                
                 data['day'] = i
-                data['cond'] = counterbalance[i-1, j-1]
+                data['prestim_R'] = -1
+                
                 if j == 1:
                     day_dats = data
                 else:
