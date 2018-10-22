@@ -92,8 +92,8 @@ class Experiment():
         core.wait(0.25)
         pre_stim_resps = event.getKeys()
         self.canvas.text(stim)
-        t0 = self.canvas.show()
-        resp = event.waitKeys(timeStamped=True)
+        self.canvas.show()
+        resp = event.waitKeys(timeStamped=core.getTime())
         # Not statement to deal with correct ldt responses on PM trials
         if resp[0][0] != corr and not (corr == self.responsekeys["pm"] and resp[0][0] == self.responsekeys["word"]):
             self.canvas.clear()
@@ -103,7 +103,7 @@ class Experiment():
         self.canvas.clear()
         self.canvas.show()
         # return response, RT, list of pre stimulus responses
-        return resp[0][0], resp[0][1] - t0, pre_stim_resps
+        return resp[0][0], resp[0][1], pre_stim_resps
 
     def print_instructions(self, instructions, delay, waitkey=None, size=None,
                            height=None, wrapWidth=None):
@@ -303,7 +303,7 @@ class Experiment():
             if all(match):
                 self.print_instructions(
                     ('100% accuracy, great job!'
-                    'Press space to continue'),
+                    ' Press space to continue'),
                      3, 'space')
                 break
             else:
@@ -346,12 +346,11 @@ class Experiment():
         perf = pd.DataFrame({'stim': stim.loc[range(0, len(RTs)), 'Words'],
                                 'C': stim.loc[range(0, len(RTs)), 'corr'],
                                 'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps,
-                                'block': self.blocknum, 'day': self.day, 'cond': btype,
-                                'count': self.rm_count
+                                'block': self.blocknum, 'day': self.day, 'cond': btype
                                 }
                             )
         perf.to_csv("data/test_RM_p" + str(self.participantid) +
-                    "_day_" + str(self.day)+ str(btype) + ".csv", index=False)        
+                    "_day_" + str(self.day)+ "_" + str(btype) + ".csv", index=False)        
 
 # distractor puzzle before they complete the task
 
