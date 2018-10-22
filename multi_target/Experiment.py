@@ -2,29 +2,8 @@ from psychopy import core, event
 from Instructions import Instructions
 import numpy as np
 import pandas as pd
+from parameters import *
 
-# quick way to switch between pilot and
-# actual experiment
-pilot = True
-
-
-instruct_delay = 5
-memorize_delay = 120
-puzzle_time = 180
-first_trials = 321
-second_trials = 643
-break_delay = 60
-break_time=120
-
-
-if pilot:
-    memorize_delay=5
-    instruct_delay = 0
-    puzzle_time = 5
-    first_trials = 0
-    second_trials = 1
-    break_delay=5
-    break_time=1
 
 '''Experiment object which is meant to do
 things like run the trials, blocks, etc.'''
@@ -65,13 +44,8 @@ class Experiment():
             self.design.set_pm_positions(5)
             self.design.create_blocks(self.responsekeys)
             self.design.insert_pm(self.counterbalance, self.responsekeys)
-            self.design.setup_data(participantid, self.counterbalance)
-            recmem_nontargets = pd.read_csv(
-                'items/recmem_nontargets.csv', header=None)
-            recmem_nontargets = recmem_nontargets.sample(frac=1)
-            recmem_nontargets.reset_index(inplace=True, drop=True)
-            recmem_nontargets.to_csv(
-                "tmp/p" + str(self.participantid) + "recmem_nontargets" + ".csv")
+            self.design.setup_data(self.participantid, self.counterbalance)
+            self.design.gen_recmem_nontargets(self.participantid)
         else:
             self.design.read_data(participantid)
         # read in PM stimuli as need to display them in instructions
@@ -131,7 +105,7 @@ class Experiment():
             recmem_instructions1, memorize_delay, height=0.085, wrapWidth=1.65)
         self.print_instructions(
             recmem_instructions2, instruct_delay, 'space', height=0.085, wrapWidth=1.65)
-        self.recmem_block(btype)
+        self.recmem_practice(btype)
         self.canvas.clear()
         self.print_instructions(
             response_instructions, instruct_delay, 'n', height=0.085, wrapWidth=1.65)
@@ -146,11 +120,12 @@ class Experiment():
         self.print_instructions("Please take a break for one minute.", break_delay)
         self.print_instructions(
             "Press space to begin the task again.", 0, waitkey='space')
- # Mid block break
+# Mid block break
         choices2, RTs2, pre_stim_resps2 = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)].loc[(first_trials+1):second_trials, 'stim'].tolist(),
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)].loc[(first_trials+1):second_trials:, 'C'].tolist())
+#Combine data from the halves and save
         choices = choices1 + choices2
         RTs = RTs1 + RTs2
         pre_stim_resps = pre_stim_resps1 + pre_stim_resps2
@@ -160,8 +135,9 @@ class Experiment():
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)],
             perf], axis=1, sort=False)
-        #if self.blocknum = 1 2 minute break
-        #Here add a function for rm test
+        self.block_ending(btype)
+
+    def block_ending(self, btype):
         self.recmem_test(btype)
         if (btype=='multi'):
             self.print_instructions(
@@ -177,10 +153,10 @@ class Experiment():
         if self.blocknum==1:
             self.print_instructions(
             "Please have a break for two minutes.", break_time)
-            
-        self.blocknum += 1
-    # loads up practice stimuli, runs practice block
 
+        self.blocknum += 1
+
+    # loads up practice stimuli, runs practice block
     def practice_block(self):
         stim = pd.read_csv("tmp/p"+str(self.participantid)+"_practice.csv")
         stim = stim.sample(frac=1).reset_index()
@@ -235,12 +211,7 @@ class Experiment():
         # if there's not enough targets, re-generate them from scratch
         if (len(full_nontargets) < 8 and btype == 'multi') or (len(
             full_nontargets) < 1 and btype == 'single'):
-            recmem_nontargets = pd.read_csv(
-                'items/recmem_nontargets.csv', header=None)
-            recmem_nontargets = recmem_nontargets.sample(frac=1)
-            recmem_nontargets.reset_index(inplace=True, drop=True)
-            recmem_nontargets.to_csv(
-                "tmp/p" + str(self.participantid) + "recmem_nontargets" + ".csv")
+            self.design.gen_recmem_nontargets(self.participantid)
             full_nontargets = full_nontargets.append(pd.read_csv("tmp/p" + str(self.participantid) +
                                                                  "recmem_nontargets" + ".csv"))
             full_nontargets.reset_index(inplace=True, drop=True)
@@ -270,7 +241,7 @@ class Experiment():
     single target condition, participants are presented one target word
     and one non-target word. 8 of each in the multi target condition'''
 
-    def recmem_block(self, btype):
+    def recmem_practice(self, btype):
       # run recmem trials til 100% accuracy
         while True:
             # add in a check that there are enough recmem targets in the .csv
@@ -322,6 +293,7 @@ class Experiment():
                     ' '.join( self.todays_multi.values.flatten()) + 
                     "\n\n Press space when you are ready for another test.", 3, 'space')
 
+###Runs the RM test once (to get recognition after the block)
     def recmem_test(self, btype):
         if (btype=='multi') :
             RM1 = "words."

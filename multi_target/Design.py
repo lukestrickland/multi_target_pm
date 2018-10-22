@@ -184,6 +184,15 @@ class Design():
 
                 self.data["day_" + str(i) + "_block_" +
                           str(j)] = thisblock_stim
+
+    def gen_recmem_nontargets(self, pid):
+        recmem_nontargets = pd.read_csv(
+            'items/recmem_nontargets.csv', header=None)
+        recmem_nontargets = recmem_nontargets.sample(frac=1)
+        recmem_nontargets.reset_index(inplace=True, drop=True)
+        recmem_nontargets.to_csv(
+            "tmp/p" + str(pid) + "recmem_nontargets" + ".csv")
+    
     #write a bunch of data files containing all the 
     #stimulus information etc (day 1)
     def setup_data(self, pid, counterbalance):
