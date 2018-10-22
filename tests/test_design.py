@@ -26,7 +26,7 @@ class Test_Design(unittest.TestCase):
 
     def test_pm_positions(self):
         old = []
-        for i in range(1, 100):
+        for i in range(1, 1000):
             test_design.set_pm_positions(0)
             all_positions = [test_design.pm_positions.iloc[:,
                                                            j].values.flatten() for j in range(0, 4)]
