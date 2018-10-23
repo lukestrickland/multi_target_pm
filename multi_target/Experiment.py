@@ -58,7 +58,7 @@ class Experiment():
         self.instructions = Instructions(
             self.responsekeys, self.todays_multi, self.todays_single)
 
-    def trial(self, stim, corr=None):
+    def trial(self, stim, corr):
         self.canvas.fixcross()
         core.wait(0.5)
         self.canvas.clear()
@@ -73,13 +73,7 @@ class Experiment():
         resp = event.waitKeys(timeStamped=trial_clock)
         #If statement to deal with case when participants are getting RM tested-
         #no feedback except telling them not to press random keys
-        if corr is None:
-            if (resp[0][0] != 'y' and resp[0][0] != 'n'): 
-                self.canvas.clear()
-                self.canvas.text("INVALID RESPONSE KEY")
-                self.canvas.show()
-                core.wait(2)
-        elif resp[0][0] != corr and not (corr == self.responsekeys["pm"] and resp[0][0] == self.responsekeys["word"]):
+        if resp[0][0] != corr and not (corr == self.responsekeys["pm"] and resp[0][0] == self.responsekeys["word"]):
             self.canvas.clear()
             self.canvas.text("INCORRECT")
             self.canvas.show()
@@ -189,7 +183,7 @@ class Experiment():
         for block in range(0, 2):
             self.run_block(self.counterbalance[self.day-1, block])
 
-    def block(self, trials, corrs=None):
+    def block(self, trials, corrs):
         RTs = []
         choices = []
         pre_stim = []
@@ -197,10 +191,7 @@ class Experiment():
         if pilot:
             ntrials = 1
         for i in range(0, ntrials):
-            if (corrs is None):
-                choice, RT, pre_stim_resps = self.trial(trials[i])
-            else:
-                choice, RT, pre_stim_resps = self.trial(trials[i], corrs[i])
+            choice, RT, pre_stim_resps = self.trial(trials[i], corrs[i])
             RTs.append(RT)
             choices.append(choice)
             pre_stim.append(pre_stim_resps)
@@ -327,20 +318,18 @@ class Experiment():
             RM1 = "word."
             RM2 = "your target word"
         self.print_instructions(
-            ("Great work completing the block!"
+            ("Great work completing the block!\n\n"
              " We now wish to test your memory for your target " +
              RM1 +
-             " You will be presented words one by one. Press the 'y' key if the "
+             "\n\n You will be presented words one by one. Press the 'y' key if the "
              "word is " +
              RM2 +
-             ", otherwise press the 'n' key. \n"
-             "Note that in this block you will NOT receive"
-             " feedback indicating whether your answers are correct. \n"
+             ", otherwise press the 'n' key. \n\n"
              "Press space to begin."), 3, 'space')
 
         stim = self.recmem_newstim(btype, n_copies=1, n_nontargets=24)
         choices, RTs, pre_stim_resps = self.block(
-            stim.iloc[:, 0])
+            stim.iloc[:, 0], stim.iloc[:, 1])
         # Update recmem saved data
         perf = pd.DataFrame({'stim': stim.loc[range(0, len(RTs)), 'Words'],
                              'C': stim.loc[range(0, len(RTs)), 'corr'],

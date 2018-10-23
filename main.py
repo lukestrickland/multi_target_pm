@@ -14,6 +14,7 @@ experiment = Experiment(canvas, Design(
     "items/stimuli.csv", 2, 2), day, participantid)
 
 #Run experiment
+experiment.recmem_test('multi')
 experiment.practice_block()
 experiment.run_both_blocks()
 experiment.save_data()
