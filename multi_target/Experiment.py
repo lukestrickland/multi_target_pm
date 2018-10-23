@@ -121,32 +121,30 @@ class Experiment():
             response_instructions, instruct_delay, 'n', height=0.085, wrapWidth=1.65)
         self.puzzle()
 
-    def run_block(self, btype):
-        self.block_leadup(btype)
+    def block_main(self, btype):
         choices1, RTs1, pre_stim_resps1 = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
-            self.blocknum)].loc[0:first_trials, 'stim'],
-            self.design.data['day_' + str(self.day) + '_block_' + str(
-                self.blocknum)].loc[0:first_trials:, 'C'])
+        self.blocknum)].loc[0:first_trials, 'stim'],
+        self.design.data['day_' + str(self.day) + '_block_' + str(
+            self.blocknum)].loc[0:first_trials:, 'C'])
         self.print_instructions(
-            "Please take a break for one minute.", break_delay)
+        "Please take a break for one minute.", break_delay)
         self.print_instructions(
-            "Press space to begin the task again.", 0, waitkey='space')
-# Mid block break
+        "Press space to begin the task again.", 0, waitkey='space')
+    # Mid block break
         choices2, RTs2, pre_stim_resps2 = self.block(self.design.data['day_' + str(self.day) + '_block_' + str(
             self.blocknum)].loc[(first_trials+1):second_trials, 'stim'].tolist(),
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)].loc[(first_trials+1):second_trials:, 'C'].tolist())
-# Combine data from the halves and save
+    # Combine data from the halves and save
         choices = choices1 + choices2
         RTs = RTs1 + RTs2
         pre_stim_resps = pre_stim_resps1 + pre_stim_resps2
         perf = pd.DataFrame({'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps,
-                             'block': self.blocknum, 'day': self.day, 'cond': btype})
+                                'block': self.blocknum, 'day': self.day, 'cond': btype})
         self.perf_data['day_' + str(self.day) + '_block_' + str(self.blocknum)] = pd.concat([
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)],
-            perf], axis=1, sort=False)
-        self.block_ending(btype)
+            perf], axis=1, sort=False)       
 
     def block_ending(self, btype):
         self.recmem_test(btype)
@@ -166,6 +164,11 @@ class Experiment():
                 "Please have a break for two minutes.", break_time)
 
         self.blocknum += 1
+
+    def run_block(self, btype):
+        self.block_leadup(btype)
+        self.block_main(btype)
+        self.block_ending(btype)
 
     # loads up practice stimuli, runs practice block
     def practice_block(self):
@@ -217,22 +220,21 @@ class Experiment():
     the start to make sure there are enough targets, and if not then shuffle
     a new RM target list from scratch.'''
 
-    def recmem_newstim(self, btype, n_copies):
+    def recmem_newstim(self, btype, n_copies, n_nontargets):
         # Shuffle in new rec-mem non-targets each loop from a csv
         full_nontargets = pd.read_csv("tmp/p" + str(self.participantid) +
                                       "recmem_nontargets" + ".csv")
         full_nontargets.dropna(how="all", inplace=True)
         # if there's not enough targets, re-generate them from scratch
-        if (len(full_nontargets) < 8 and btype == 'multi') or (len(
-                full_nontargets) < 1 and btype == 'single'):
+        if (len(full_nontargets) < n_nontargets):
             self.design.gen_recmem_nontargets(self.participantid)
             full_nontargets = full_nontargets.append(pd.read_csv("tmp/p" + str(self.participantid) +
                                                                  "recmem_nontargets" + ".csv"))
             full_nontargets.reset_index(inplace=True, drop=True)
 
-        nontargets = full_nontargets.copy().iloc[0:8, 1].to_frame()
+        nontargets = full_nontargets.copy().iloc[0:n_nontargets, 1].to_frame()
         next_nontargets = full_nontargets.copy(
-        ).loc[range(8, len(full_nontargets)), :]
+        ).loc[range(n_nontargets, len(full_nontargets)), :]
 
         next_nontargets.reset_index(inplace=True, drop=True)
         next_nontargets.to_csv("tmp/p" + str(self.participantid) +
@@ -269,7 +271,7 @@ class Experiment():
         while True:
             # add in a check that there are enough recmem targets in the .csv
             # If <8 targets, create a new file
-            stim = self.recmem_newstim(btype, n_copies=2)    
+            stim = self.recmem_newstim(btype, n_copies=2, n_nontargets=8)    
             choices, RTs, pre_stim_resps = self.block(
                 stim.iloc[:, 0], stim.iloc[:, 1])
             # Update recmem saved data
@@ -333,10 +335,10 @@ class Experiment():
              RM2 +
              ", otherwise press the 'n' key. \n"
              "Note that in this block you will NOT receive"
-             "feedback indicating whether your answers are correct. \n"
+             " feedback indicating whether your answers are correct. \n"
              "Press space to begin."), 3, 'space')
 
-        stim = self.recmem_newstim(btype, n_copies=3)
+        stim = self.recmem_newstim(btype, n_copies=1, n_nontargets=24)
         choices, RTs, pre_stim_resps = self.block(
             stim.iloc[:, 0])
         # Update recmem saved data
