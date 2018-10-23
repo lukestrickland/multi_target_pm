@@ -47,11 +47,10 @@ class Canvas():
         self.show()
 
     def show(self):
-
         for stim in self.stim_list:
             stim.draw()
         self.win.flip(clearBuffer=True)
-        return core.getTime()
+ #       return core.getTime()
 
     def clear(self):
 

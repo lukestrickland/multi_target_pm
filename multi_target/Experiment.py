@@ -58,7 +58,7 @@ class Experiment():
         self.instructions = Instructions(
             self.responsekeys, self.todays_multi, self.todays_single)
 
-    def trial(self, stim, corr):
+    def trial(self, stim, corr=None):
         self.canvas.fixcross()
         core.wait(0.5)
         self.canvas.clear()
@@ -66,10 +66,20 @@ class Experiment():
         core.wait(0.25)
         pre_stim_resps = event.getKeys()
         self.canvas.text(stim)
+        #New way to get accurate ms timing
+        trial_clock = core.Clock()
+        self.canvas.win.callOnFlip(trial_clock.reset)
         self.canvas.show()
-        resp = event.waitKeys(timeStamped=core.getTime())
-        # Not statement to deal with correct ldt responses on PM trials
-        if resp[0][0] != corr and not (corr == self.responsekeys["pm"] and resp[0][0] == self.responsekeys["word"]):
+        resp = event.waitKeys(timeStamped=trial_clock)
+        #If statement to deal with case when participants are getting RM tested-
+        #no feedback except telling them not to press random keys
+        if corr is None:
+            if (resp[0][0] != 'y' and resp[0][0] != 'n'): 
+                self.canvas.clear()
+                self.canvas.text("INVALID RESPONSE KEY")
+                self.canvas.show()
+                core.wait(2)
+        elif resp[0][0] != corr and not (corr == self.responsekeys["pm"] and resp[0][0] == self.responsekeys["word"]):
             self.canvas.clear()
             self.canvas.text("INCORRECT")
             self.canvas.show()
@@ -117,7 +127,8 @@ class Experiment():
             self.blocknum)].loc[0:first_trials, 'stim'],
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)].loc[0:first_trials:, 'C'])
-        self.print_instructions("Please take a break for one minute.", break_delay)
+        self.print_instructions(
+            "Please take a break for one minute.", break_delay)
         self.print_instructions(
             "Press space to begin the task again.", 0, waitkey='space')
 # Mid block break
@@ -125,7 +136,7 @@ class Experiment():
             self.blocknum)].loc[(first_trials+1):second_trials, 'stim'].tolist(),
             self.design.data['day_' + str(self.day) + '_block_' + str(
                 self.blocknum)].loc[(first_trials+1):second_trials:, 'C'].tolist())
-#Combine data from the halves and save
+# Combine data from the halves and save
         choices = choices1 + choices2
         RTs = RTs1 + RTs2
         pre_stim_resps = pre_stim_resps1 + pre_stim_resps2
@@ -139,20 +150,20 @@ class Experiment():
 
     def block_ending(self, btype):
         self.recmem_test(btype)
-        if (btype=='multi'):
+        if (btype == 'multi'):
             self.print_instructions(
-            ("Thank you. You no longer need to remember your target words."
-            " In fact, you will not be presented those words again in this"
-            " experiment. Press space to continue."), 0, waitkey="space")
+                ("Thank you. You no longer need to remember your target words."
+                 " In fact, you will not be presented those words again in this"
+                 " experiment. Press space to continue."), 0, waitkey="space")
         else:
             self.print_instructions(
-            ("Thank you. You no longer need to remember your target word."
-            " In fact, you will not be presented that word again in this"
-            " experiment. Press space to continue."), 0, waitkey="space")
+                ("Thank you. You no longer need to remember your target word."
+                 " In fact, you will not be presented that word again in this"
+                 " experiment. Press space to continue."), 0, waitkey="space")
 
-        if self.blocknum==1:
+        if self.blocknum == 1:
             self.print_instructions(
-            "Please have a break for two minutes.", break_time)
+                "Please have a break for two minutes.", break_time)
 
         self.blocknum += 1
 
@@ -166,7 +177,7 @@ class Experiment():
         perf = pd.DataFrame({'stim': stim.loc[range(0, len(RTs)), "stim"],
                              'S': stim.loc[range(0, len(RTs)), "S"],
                              'C': stim.loc[range(0, len(RTs)), "C"],
-                             'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps, 
+                             'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps,
                              'day': self.day, 'cond': 'practice'})
         perf.to_csv("data/practice_p" + str(self.participantid) +
                     "_day_" + str(self.day) + ".csv")
@@ -175,7 +186,7 @@ class Experiment():
         for block in range(0, 2):
             self.run_block(self.counterbalance[self.day-1, block])
 
-    def block(self, trials, corrs):
+    def block(self, trials, corrs=None):
         RTs = []
         choices = []
         pre_stim = []
@@ -183,7 +194,10 @@ class Experiment():
         if pilot:
             ntrials = 1
         for i in range(0, ntrials):
-            choice, RT, pre_stim_resps = self.trial(trials[i], corrs[i])
+            if (corrs is None):
+                choice, RT, pre_stim_resps = self.trial(trials[i])
+            else:
+                choice, RT, pre_stim_resps = self.trial(trials[i], corrs[i])
             RTs.append(RT)
             choices.append(choice)
             pre_stim.append(pre_stim_resps)
@@ -193,7 +207,7 @@ class Experiment():
                 core.quit()
         return choices, RTs, pre_stim
 
-    '''This function is fairly cooked. Before each block,
+    '''fairly cooked. Before each block,
     participants do a recognition memory task to make sure they
     perfectly recall the items. The recognition memory task involves
     50% non-targets and 50% target items. I have stored a list of 
@@ -203,14 +217,14 @@ class Experiment():
     the start to make sure there are enough targets, and if not then shuffle
     a new RM target list from scratch.'''
 
-    def recmem_newstim(self, btype):
+    def recmem_newstim(self, btype, n_copies):
         # Shuffle in new rec-mem non-targets each loop from a csv
         full_nontargets = pd.read_csv("tmp/p" + str(self.participantid) +
                                       "recmem_nontargets" + ".csv")
         full_nontargets.dropna(how="all", inplace=True)
         # if there's not enough targets, re-generate them from scratch
         if (len(full_nontargets) < 8 and btype == 'multi') or (len(
-            full_nontargets) < 1 and btype == 'single'):
+                full_nontargets) < 1 and btype == 'single'):
             self.design.gen_recmem_nontargets(self.participantid)
             full_nontargets = full_nontargets.append(pd.read_csv("tmp/p" + str(self.participantid) +
                                                                  "recmem_nontargets" + ".csv"))
@@ -226,15 +240,24 @@ class Experiment():
         if (btype == 'multi'):
             targets = self.todays_multi.copy()
         else:
-            targets = pd.concat([self.todays_single.copy()]*8, ignore_index=True)
+            targets = pd.concat([self.todays_single.copy()]
+                                * 8, ignore_index=True)
 
         nontargets['corr'] = "n"
         nontargets = nontargets.rename(columns={'0': 'Words'})
         targets['corr'] = "y"
-       
+
         stim = pd.concat([nontargets, targets])
         stim = stim.sample(frac=1)
         stim.reset_index(inplace=True, drop=True)
+#Copy/shuffle/append the stimulus list to make as many trials as desired
+        for i in range(1, n_copies):
+            stim2 = stim.copy()
+            stim2 = stim2.sample(frac=1)
+            stim2.reset_index(inplace=True, drop=True)  
+            stim = stim.append(stim2)
+            stim.reset_index(inplace=True, drop=True)     
+
         return(stim)
 
     '''runs the recognition memory task until perfect accuracy. In the 
@@ -246,7 +269,7 @@ class Experiment():
         while True:
             # add in a check that there are enough recmem targets in the .csv
             # If <8 targets, create a new file
-            stim = self.recmem_newstim(btype)
+            stim = self.recmem_newstim(btype, n_copies=2)    
             choices, RTs, pre_stim_resps = self.block(
                 stim.iloc[:, 0], stim.iloc[:, 1])
             # Update recmem saved data
@@ -274,65 +297,67 @@ class Experiment():
             if all(match):
                 self.print_instructions(
                     ('100% accuracy, great job!'
-                    ' Press space to continue'),
-                     3, 'space')
+                     ' Press space to continue'),
+                    3, 'space')
                 break
             else:
                 if (btype == 'single'):
                     self.print_instructions(
-                        ('You were not 100% accurate, please study the target word' 
-                        ' and try again. Press space when ready.'), 3, 'space')
-                    self.print_instructions("Here is the target word: \n\n"+
-                    ' '.join(self.todays_single.values.flatten()) + 
-                    "\n\n Press space when you are ready for another test.", 3, 'space')
+                        ('You were not 100% accurate, please study the target word'
+                         ' and try again. Press space when ready.'), 3, 'space')
+                    self.print_instructions("Here is the target word: \n\n" +
+                                            ' '.join(self.todays_single.values.flatten()) +
+                                            "\n\n Press space when you are ready for another test.", 3, 'space')
                 else:
                     self.print_instructions(
                         ('You were not 100% accurate, please study the target words'
-                        ' and try again. Press space when ready.'), 3, 'space')
-                    self.print_instructions("Here are the target words: \n\n"+
-                    ' '.join( self.todays_multi.values.flatten()) + 
-                    "\n\n Press space when you are ready for another test.", 3, 'space')
+                         ' and try again. Press space when ready.'), 3, 'space')
+                    self.print_instructions("Here are the target words: \n\n" +
+                                            ' '.join(self.todays_multi.values.flatten()) +
+                                            "\n\n Press space when you are ready for another test.", 3, 'space')
 
-###Runs the RM test once (to get recognition after the block)
+# Runs the RM test once (to get recognition after the block)
     def recmem_test(self, btype):
-        if (btype=='multi') :
+        if (btype == 'multi'):
             RM1 = "words."
             RM2 = "from your target list"
         else:
-            RM1= "word."
+            RM1 = "word."
             RM2 = "your target word"
         self.print_instructions(
-                ("Great work completing the block!" 
-                " We now wish to test your memory for your target " +
-                 RM1 +
-                " You will be presented words one by one. Press the 'y' key if the "
-                "word is " +
-                RM2 +
-                ", otherwise press the 'n' key. \n\n" 
-                "Press space to begin."), 3, 'space')
+            ("Great work completing the block!"
+             " We now wish to test your memory for your target " +
+             RM1 +
+             " You will be presented words one by one. Press the 'y' key if the "
+             "word is " +
+             RM2 +
+             ", otherwise press the 'n' key. \n"
+             "Note that in this block you will NOT receive"
+             "feedback indicating whether your answers are correct. \n"
+             "Press space to begin."), 3, 'space')
 
-        stim = self.recmem_newstim(btype)
+        stim = self.recmem_newstim(btype, n_copies=3)
         choices, RTs, pre_stim_resps = self.block(
-            stim.iloc[:, 0], stim.iloc[:, 1])
+            stim.iloc[:, 0])
         # Update recmem saved data
         perf = pd.DataFrame({'stim': stim.loc[range(0, len(RTs)), 'Words'],
-                                'C': stim.loc[range(0, len(RTs)), 'corr'],
-                                'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps,
-                                'block': self.blocknum, 'day': self.day, 'cond': btype
-                                }
+                             'C': stim.loc[range(0, len(RTs)), 'corr'],
+                             'RT': RTs, 'R': choices, 'prestim_R': pre_stim_resps,
+                             'block': self.blocknum, 'day': self.day, 'cond': btype
+                             }
                             )
         perf.to_csv("data/test_RM_p" + str(self.participantid) +
-                    "_day_" + str(self.day)+ "_" + str(btype) + ".csv", index=False)        
+                    "_day_" + str(self.day) + "_" + str(btype) + ".csv", index=False)
 
 # distractor puzzle before they complete the task
 
     def puzzle(self):
         self.print_instructions(('Before you complete the lexical decision trials we would like you'
                                  ' to complete a sudoku puzzle.\n\n Please find the puzzle on your desk. '
-                                'You have three minutes. Do not worry if there is not time to finish the puzzle.'),
+                                 'You have three minutes. Do not worry if there is not time to finish the puzzle.'),
                                 puzzle_time)
-        self.print_instructions(("It is now time to begin the lexical decision trials. \n\n" 
-                                 "Please rest your fingers on the response keys." 
+        self.print_instructions(("It is now time to begin the lexical decision trials. \n\n"
+                                 "Please rest your fingers on the response keys."
                                  " Press space when you are ready to begin."), 1, 'space')
 # saves of the main data at the end of the experiment.
 

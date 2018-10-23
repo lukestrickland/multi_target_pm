@@ -9,3 +9,5 @@ recmem_nontargets.csv
 *.Rproj
 *.RData
 *.Rhistory
+*.png
+*.html

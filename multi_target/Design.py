@@ -174,7 +174,7 @@ class Design():
                 thisblock_stim = self.data["day_" +
                                            str(i) + "_block_" + str(j)]
                 thisblock_stim.columns = ["stim", "S", "C"]
-                #almost sure there's a one liner way to do the below
+                #Insert PM targets in by pm position
                 l = 0
                 for position in pm_positions:
                     pm_target.values[0, 0] = target_list[l]

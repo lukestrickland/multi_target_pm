@@ -1,0 +1,99 @@
+---
+title: "Multi Target PM Experiment"
+author: "ljgs"
+date: "22/10/2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+by Luke Strickland
+
+###Created using Psychopy
+
+Peirce, J. W. (2007). PsychoPy-psychophysics software in Python. Journal of neuroscience methods, 162(1), 8-13.
+
+###Task
+
+####Experiment Design
+- Within-subjects, two conditions: multi target PM and single target PM.<br />
+
+- Participants complete 24 practice lexical trials and two PM blocks per day - one single target block, and one multi target block. The order they are presented single/multi in is counterbalanced across participants<br />
+
+- Participants are assigned one of four key counterbalances: <br />
+
+      {"word": 'd', "nonword": 's', "pm": 'j'}<br />
+      {"word": 's', "nonword": 'd', "pm": 'j'}<br />
+      {"word": 'j', "nonword": 'k', "pm": 'd'}<br />
+      {"word": 'k', "nonword": 'j', "pm": 'd'}<br />
+
+- The combination of key assignments and block order is balanced every eight participants:
+
+```{r counterbalance, echo=FALSE, out.width='65%', fig.cap=""}
+
+knitr::include_graphics("counterbalance.png")
+
+
+```
+
+####Trial Procedure
+- Each trial begins with a fixation cross for 0.5s <br />
+
+- This is followed by a blank screen for 0.25s <br />
+
+- Then, the letter string is presented until a response is submitted<br />
+
+- If participants submit an incorrect response, they see a screen saying INCORRECT! for 1 second. They don't see this if they submit a correct ongoing task response on a PM trial. They also don't see it during their end of block recognition memory test (see below). <br />
+
+- Participants then proceed immediately to the next trial (next fixation cross)<br />
+
+####Block Procedure
+- Before each block, participants are presented their PM target(s) to memorize for two minutes.<br />
+
+- After that, they perform a recognition memory task, in which they must distinguish their target word(s) from non-target words. They are presented 32 trials. The first 16 trials include their 8 PM targets (in the multi condition, or 8 repetitions of their single target in the single condition) and 8 non-targets randomly shuffled. The second 16 trials includes the same again, reshuffled. <br />
+
+- To assure that participants have adequately memorized their target words, the recognition task is repeated until 100% accuracy. <br /> 
+
+- After the recognition task, participants are instructed that in the next block of lexical decision trials, they should press the PM key (e.g., 'j') instead of the ongoing task key if they see any target words. They then perform a 3 minute sudoku distractor puzzle, before commencing the lexical decision trials. <br />
+
+- Participants perform 644 lexical decision trials. In the middle of their 644 trial block (after trial 322), they have a break to rest for 1 minute, to reduce possible fatigue effects. <br />
+
+- After the lexical decision trials, participants memory for their target(s) is tested. They perform 48 more trials of the recognition memory task - 3 presentations of each of their 8 targets (or 24 presentations of their single target) - and 24 presentations of non-targets. During these trials, they receive no 'incorrect' feedback if they err, so that we don't remind them which items are targets and non-targets. <br />
+
+####Stimuli
+#####Lexical decision Stimuli
+- 1306 words and non-words randomly selected from Strickland et al. (2018)'s Experiment 2.Low written frequency, length between 5-10 characters. <br /> 
+
+- 18 of these are randomly sampled to be PM targets for each participant (8 multi targets and 1 single target x 2 days). <br /> 
+
+#####Recognition Memory Stimuli
+- Strickland et al. (2018) had 1896 words total. The 590 remaining words (not taken for the lexical decision trials) were used as non-targets for the recognition memory task, sampled randomly without replacement. <br />
+
+- Assuming they only performed their practice RM blocks once, participants would be expected to use RM 80 non-targets per day. Thus, 590 recognition memory non-targets is likely to be sufficient without re-using targets. <br />
+
+- If participants do need to perform the practice RM blocks enough times to deplete the non-target pool, it will be reshuffled and they will start again fresh. <br />
+
+#####PM Stimuli
+- As above, PM stimuli are randomly sampled from the lexical decision set (those sampled are not used as ongoing task items). <br />
+
+- PM targets are presented 64 times in each 644 trial block. The first 2 trials of each block, and the first 2 trials after the mid-block break, cannot be PM targets. PM targets are separated by at least 3 ongoing task targets. PM target trial positions:
+
+```{python}
+#Generate PM target ranges
+import numpy as np
+starts = np.concatenate(
+    [np.linspace(start=2, stop=312, num=32),
+     np.linspace(start=324, stop=634, num=32)]) + 1
+
+stops = np.concatenate(
+    [np.linspace(start=11, stop=321, num=32),
+     np.linspace(start=333, stop=643, num=32)]) + 1
+     
+ranges = [str(int(starts[i])) + "-" + 
+   str(int(stops[i])) for i in range(0, len(starts))]
+  
+print(ranges)
+```
+
+
+
+
