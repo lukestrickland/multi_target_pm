@@ -67,7 +67,7 @@ class Instructions():
                             " You will be presented words one by one. Press the 'y' key for your target "
                             "word, otherwise press the 'n' key. \n\n" 
                             " We wish to train you to 100% accuracy. Thus, you will continue to be"
-                            " tested until you can perfectly recognise the target words \n\n" 
+                            " tested until you can perfectly recognise the target word.\n\n" 
                             "Press space to begin.")
 
             instruction4 = ("Here is the target word that you just memorized: \n\n" +

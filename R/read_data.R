@@ -9,7 +9,7 @@ main_block_files <-  data_files[!grepl("practice|RM", data_files)]
 
 okdats <- stack_dats(main_block_files)
 #Remove untested data
-okdats <- okdats[okdats$RT != -1, ]
+okdats <- okdats[okdats$RT != -1,]
 
 #clean up df
 okdats$S <- factor(okdats$S)
@@ -75,4 +75,3 @@ okdats %>%
 okdats %>%
   group_by(S, cond) %>%
   summarise(mean_RT = mean(RT))
-

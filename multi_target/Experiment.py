@@ -41,7 +41,7 @@ class Experiment():
             self.design.practice_stim(
                 self.responsekeys["word"], self.responsekeys["nonword"], self.participantid)
             self.design.set_stim(self.counterbalance)
-            self.design.set_pm_positions(5)
+            self.design.set_pm_positions(3)
             self.design.create_blocks(self.responsekeys)
             self.design.insert_pm(self.counterbalance, self.responsekeys)
             self.design.setup_data(self.participantid, self.counterbalance)
@@ -261,7 +261,7 @@ class Experiment():
       # run recmem trials til 100% accuracy
         while True:
             # add in a check that there are enough recmem targets in the .csv
-            # If <8 targets, create a new file
+            # If <designed nontargets, create a new file
             stim = self.recmem_newstim(btype, n_copies=2, n_nontargets=8)    
             choices, RTs, pre_stim_resps = self.block(
                 stim.iloc[:, 0], stim.iloc[:, 1])

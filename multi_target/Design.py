@@ -103,9 +103,9 @@ class Design():
                 self.nonwords["day_" + str(i) + "_block_" + str(j)] = nonwords
 
     # The pm items need to be interspersed amongst the rest according to quite strict
-    # criteria. Here I am putting them in every 13 trials starting from trial 4.
+    # criteria. Here I am putting them in every 10 trials starting from trial 3.
     # there is a break in the middle for participants to rest, so they also
-    # don't get pm items for 3 trials after the break (which is why start = 321 when blocklength is 318)
+    # don't get pm items for 2 trials after the break
     def set_pm_starts_stops(self):
         starts = np.concatenate(
             [np.linspace(start=2, stop=312, num=32),
@@ -117,6 +117,7 @@ class Design():
 
         return starts, stops
 
+#go through and add PM targets random positions within desired ranges
     def set_pm_positions(self, minsep):
         tmp = pd.DataFrame()
         starts, stops = self.set_pm_starts_stops()

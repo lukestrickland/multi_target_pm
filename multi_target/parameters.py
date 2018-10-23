@@ -1,7 +1,7 @@
 
 # quick way to switch between pilot and
 # actual experiment
-pilot = True
+pilot = False
 
 
 instruct_delay = 5
