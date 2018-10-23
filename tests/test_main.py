@@ -21,12 +21,26 @@ test_design = Design(
     "items/stimuli.csv", 2, 2)
 
 
-class Test_Design(unittest.TestCase):
+class Test_Main(unittest.TestCase):
     # todo: test whether PM items turn up where expected
 
+    def test_pm_starts_stop(self):
+        starts, stops= test_design.set_pm_starts_stops()
+        start_dist_between = [(starts[i] - starts[i-1]) for i in range(1, len(starts))]
+        stop_dist_between = [(stops[i] - stops[i-1]) for i in range(1, len(stops))]
+        equal = start_dist_between == stop_dist_between
+        start_dist_between[((len(starts)-1) /2)] += -2
+        stop_dist_between[((len(starts)-1) /2)] += -2
+        all_dists = start_dist_between + stop_dist_between
+        all_same = len(set(all_dists))==1
+        self.assertTrue(equal and all_same)
+
+        
+###not a proper test: plots pm positions to assess
+#where they are approximately uniform
     def test_pm_positions(self):
         old = []
-        for i in range(1, 100):
+        for i in range(1, 1000):
             test_design.set_pm_positions(0)
             all_positions = [test_design.pm_positions.iloc[:,
                                                            j].values.flatten() for j in range(0, 4)]
@@ -124,9 +138,9 @@ class Test_Experiment(unittest.TestCase):
         all_nontargets = []
         for i in range(0, initial_len):
             if (i == 0):
-                newstim = experiment.recmem_newstim('multi')
+                newstim = experiment.recmem_newstim('multi', n_copies=2, n_nontargets=8)
             else:
-                newstim = newstim.append(experiment.recmem_newstim('multi'))
+                newstim = newstim.append(experiment.recmem_newstim('multi', n_copies=2, n_nontargets=8))
         self.assertFalse(any(pd.isnull(newstim["Words"])))
 
     def test_RM_newstim_samenum(self):
@@ -137,7 +151,7 @@ class Test_Experiment(unittest.TestCase):
                         "recmem_nontargets" + ".csv")) * len(experiment.todays_multi)
         all_nontargets = []
         for i in range(0, initial_len):
-            newstim = experiment.recmem_newstim('multi')
+            newstim = experiment.recmem_newstim('multi', n_copies=2, n_nontargets=8)
             nontargets = newstim.loc[newstim['corr'] ==
                                      'n', "Words"].values.flatten().tolist()
             all_nontargets = all_nontargets + nontargets

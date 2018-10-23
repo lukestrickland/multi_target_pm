@@ -103,30 +103,35 @@ class Design():
                 self.nonwords["day_" + str(i) + "_block_" + str(j)] = nonwords
 
     # The pm items need to be interspersed amongst the rest according to quite strict
-    # criteria. Here I am putting them in every 13 trials starting from trial 4.
+    # criteria. Here I am putting them in every 10 trials starting from trial 3.
     # there is a break in the middle for participants to rest, so they also
-    # don't get pm items for 3 trials after the break (which is why start = 321 when blocklength is 318)
+    # don't get pm items for 2 trials after the break
+    def set_pm_starts_stops(self):
+        starts = np.concatenate(
+            [np.linspace(start=2, stop=312, num=32),
+                np.linspace(start=324, stop=634, num=32)])
 
+        stops = np.concatenate(
+            [np.linspace(start=11, stop=321, num=32),
+                np.linspace(start=333, stop=643, num=32)])
+
+        return starts, stops
+
+#go through and add PM targets random positions within desired ranges
     def set_pm_positions(self, minsep):
         tmp = pd.DataFrame()
+        starts, stops = self.set_pm_starts_stops()
         for i in range(1, self.days+1):
             for j in range(1, self.blocks+1):
-                # Define ranges to insert PM items into
-                starts = np.concatenate(
-                    [np.linspace(start=2, stop=312, num=32),
-                     np.linspace(start=324, stop=634, num=32)])
-
-                stops = np.concatenate(
-                    [np.linspace(start=11, stop=321, num=32),
-                     np.linspace(start=333, stop=643, num=32)])
-        #################
-
                 pm_positions = []
                 for k in range(0, len(starts)):
                     start = starts[k]
                     stop = stops[k]
 
                     if(k == 0):
+                    # -minsep is just to make sure that 'last'
+                    # is far enough back on trial 0 to not interfere
+                    # with first PM trial placement for any minsep    
                         last = -minsep
                     else:
                         last = pm_positions[k-1]
@@ -157,6 +162,7 @@ class Design():
                 tmp.columns = ["stim", "S", "C"]
                 self.data["day_" + str(i) + "_block_" + str(j)
                           ] = tmp.sample(frac=1).reset_index(drop=True)
+
     #insert PM items into data
     def insert_pm(self, counterbalance, keybalance):
         for i in range(1, self.days+1):
@@ -174,7 +180,7 @@ class Design():
                 thisblock_stim = self.data["day_" +
                                            str(i) + "_block_" + str(j)]
                 thisblock_stim.columns = ["stim", "S", "C"]
-                #almost sure there's a one liner way to do the below
+                #Insert PM targets in by pm position
                 l = 0
                 for position in pm_positions:
                     pm_target.values[0, 0] = target_list[l]
@@ -184,6 +190,17 @@ class Design():
 
                 self.data["day_" + str(i) + "_block_" +
                           str(j)] = thisblock_stim
+
+    #generate a full csv of recognition memory nontargets
+    #(read, shuffle, write)
+    def gen_recmem_nontargets(self, pid):
+        recmem_nontargets = pd.read_csv(
+            'items/recmem_nontargets.csv', header=None)
+        recmem_nontargets = recmem_nontargets.sample(frac=1)
+        recmem_nontargets.reset_index(inplace=True, drop=True)
+        recmem_nontargets.to_csv(
+            "tmp/p" + str(pid) + "recmem_nontargets" + ".csv")
+    
     #write a bunch of data files containing all the 
     #stimulus information etc (day 1)
     def setup_data(self, pid, counterbalance):
@@ -207,7 +224,8 @@ class Design():
                 "tmp/p" + str(pid) + "_single" + ".csv")
             self.multi_cond_words.to_csv(
                 "tmp/p" + str(pid) + "_multi" + ".csv")
-    #read the data backup (day 2)
+
+    #read the data back in (to initiliase day 2)
     def read_data(self, pid):
         self.single_cond_words = pd.read_csv(
             "tmp/p" + str(pid) + "_single" + ".csv", header=None).iloc[:, 1]
